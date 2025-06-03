@@ -35,15 +35,12 @@ class CommunityResource extends Resource
                 Forms\Components\TextInput::make('contact_phone')
                     ->tel()
                     ->maxLength(255),
-                    FileUpload::make('images')
-                    ->label('Image ')
-                    ->multiple() // untuk mengaktifkan upload banyak gambar
-                    ->image() // tampilkan preview image
-                    ->preserveFilenames() // agar nama file tidak diubah
-                    ->reorderable() // opsional: bisa atur urutan
-                    ->enableDownload() // opsional: bisa unduh file
-                    ->enableOpen() // opsional: bisa klik buka
-                    ->columnSpan('full'), // opsional: lebar field
+                    Forms\Components\FileUpload::make('images')
+    ->label('Gambar Komunitas')
+    ->image()
+    ->multiple()
+    ->directory('communities')
+    ->required(),
                     Select::make('status')
                     ->label('Status')
                     ->required()
