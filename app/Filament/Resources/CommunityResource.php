@@ -35,10 +35,9 @@ class CommunityResource extends Resource
                     ->tel()
                     ->maxLength(255),
                     FileUpload::make('images')
-                    ->label('Gambar Komunitas')
+                    ->label('Image ')
                     ->multiple() // untuk mengaktifkan upload banyak gambar
                     ->image() // tampilkan preview image
-                    ->directory('communities') // folder penyimpanan
                     ->preserveFilenames() // agar nama file tidak diubah
                     ->reorderable() // opsional: bisa atur urutan
                     ->enableDownload() // opsional: bisa unduh file
