@@ -7,6 +7,7 @@ use App\Http\Controllers\ChurchEventController;
 use App\Http\Controllers\CounselingController;
 use App\Http\Controllers\SeatBookingController;
 use App\Http\Controllers\Api\InfaqController;
+use App\Http\Controllers\CommunityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/seat-bookings/available-seats', [SeatBookingController::class, 'availableSeats']);
     Route::post('/seat-bookings', [SeatBookingController::class, 'bookSeat']);
     Route::get('/my-bookings', [SeatBookingController::class, 'myBookings']);
+    Route::get('/communities', [CommunityController::class, 'index']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
