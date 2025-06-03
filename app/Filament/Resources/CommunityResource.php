@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\FileUpload;
 
 class CommunityResource extends Resource
 {
@@ -33,8 +34,17 @@ class CommunityResource extends Resource
                 Forms\Components\TextInput::make('contact_phone')
                     ->tel()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('images'),
-                Forms\Components\TextInput::make('status')
+                    FileUpload::make('images')
+                    ->label('Gambar Komunitas')
+                    ->multiple() // untuk mengaktifkan upload banyak gambar
+                    ->image() // tampilkan preview image
+                    ->directory('communities') // folder penyimpanan
+                    ->preserveFilenames() // agar nama file tidak diubah
+                    ->reorderable() // opsional: bisa atur urutan
+                    ->enableDownload() // opsional: bisa unduh file
+                    ->enableOpen() // opsional: bisa klik buka
+                    ->columnSpan('full'), // opsional: lebar field
+                                    Forms\Components\TextInput::make('status')
                     ->required(),
             ]);
     }
