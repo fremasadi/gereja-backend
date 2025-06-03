@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 
 class CommunityResource extends Resource
 {
@@ -43,8 +44,14 @@ class CommunityResource extends Resource
                     ->enableDownload() // opsional: bisa unduh file
                     ->enableOpen() // opsional: bisa klik buka
                     ->columnSpan('full'), // opsional: lebar field
-                                    Forms\Components\TextInput::make('status')
-                    ->required(),
+                    Select::make('status')
+                    ->label('Status')
+                    ->required()
+                    ->options([
+                        'active' => 'active',
+                        'inactive' => 'inactive',
+                    ])
+                    ->default('active'),
             ]);
     }
 
