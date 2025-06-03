@@ -8,6 +8,7 @@ use App\Http\Controllers\CounselingController;
 use App\Http\Controllers\SeatBookingController;
 use App\Http\Controllers\Api\InfaqController;
 use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\MarriageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/seat-bookings', [SeatBookingController::class, 'bookSeat']);
     Route::get('/my-bookings', [SeatBookingController::class, 'myBookings']);
     Route::get('/communities', [CommunityController::class, 'index']);
+
+
+    Route::get('/marriages', [MarriageController::class, 'index']);
+    Route::get('/marriages/{id}', [MarriageController::class, 'show']);
+    Route::post('/marriages', [MarriageController::class, 'store']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
