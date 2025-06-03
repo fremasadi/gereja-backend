@@ -14,7 +14,7 @@ class Community extends Model
         'description',
         'leader_name',
         'contact_phone',
-        'image',
+        'images',
         'status',
     ];
 
