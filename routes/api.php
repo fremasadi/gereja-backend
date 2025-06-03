@@ -35,29 +35,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::prefix('infaq')->group(function () {
-    
-    // Routes untuk mobile app (memerlukan autentikasi jika diperlukan)
-    Route::middleware(['api'])->group(function () {
-        
-        // Daftar infaq dengan filter dan pagination
-        Route::get('/', [InfaqController::class, 'index']);
-        
-        // Buat transaksi infaq baru
-        Route::post('/', [InfaqController::class, 'store']);
-        
-        // Detail infaq berdasarkan order_id
-        Route::get('/{order_id}', [InfaqController::class, 'show']);
-        
-        // Cek status transaksi dari Midtrans
-        Route::get('/{order_id}/status', [InfaqController::class, 'checkStatus']);
-        
-        // Statistik infaq
-        Route::get('/stats/summary', [InfaqController::class, 'statistics']);
-        
-    });
-    
-    // Webhook dari Midtrans (tidak perlu autentikasi)
-    Route::post('/webhook', [InfaqController::class, 'webhook']);
-    
+Route::prefix('infaq')->controller(App\Http\Controllers\Api\InfaqController::class)->group(function () {
+    Route::get('/', 'index');
+    Route::post('/', 'store');
+    Route::get('/{id}', 'show');
 });
