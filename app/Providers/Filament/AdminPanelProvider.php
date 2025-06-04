@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->brandName('Admin Kantin Nguldi')
+            ->brandName('Admin Gereja Bethany')
             ->darkMode(false) // Matikan dark mode
             ->topNavigation(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
