@@ -9,4 +9,16 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateCounseling extends CreateRecord
 {
     protected static string $resource = CounselingResource::class;
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction()
+                ->label('Simpan'),
+        ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
