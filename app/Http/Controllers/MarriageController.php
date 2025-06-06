@@ -30,27 +30,26 @@ class MarriageController extends Controller
     // Store new marriage data
     public function store(Request $request)
     {
+        // Log raw input untuk debugging
+        \Log::info('Raw request data:', [
+            'fotocopy_ktp_type' => gettype($request->input('fotocopy_ktp')),
+            'fotocopy_ktp_raw' => $request->input('fotocopy_ktp'),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'nama_lengkap_pria' => 'required|string|max:255',
             'nama_lengkap_wanita' => 'required|string|max:255',
             'no_telepon' => 'required|string|max:20',
             'tanggal_pernikahan' => 'required|date',
 
-            // Validasi array untuk images
-            'fotocopy_ktp' => 'required|array',
-            'fotocopy_ktp.*' => 'array', // Setiap item harus berupa array (object image)
-            'fotocopy_kk' => 'required|array',
-            'fotocopy_kk.*' => 'array',
-            'fotocopy_akte_kelahiran' => 'required|array',
-            'fotocopy_akte_kelahiran.*' => 'array',
-            'fotocopy_akte_baptis_selam' => 'required|array',
-            'fotocopy_akte_baptis_selam.*' => 'array',
-            'akte_nikah_orang_tua' => 'required|array',
-            'akte_nikah_orang_tua.*' => 'array',
-            'fotocopy_n1_n4' => 'required|array',
-            'fotocopy_n1_n4.*' => 'array',
-            'foto_berdua' => 'required|array',
-            'foto_berdua.*' => 'array',
+            // Ubah validasi - terima string JSON atau array
+            'fotocopy_ktp' => 'required',
+            'fotocopy_kk' => 'required',
+            'fotocopy_akte_kelahiran' => 'required',
+            'fotocopy_akte_baptis_selam' => 'required',
+            'akte_nikah_orang_tua' => 'required',
+            'fotocopy_n1_n4' => 'required',
+            'foto_berdua' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -104,14 +103,10 @@ class MarriageController extends Controller
                 'message' => 'Marriage record created successfully', 
                 'data' => $response
             ], 201);
-            // Add this in your store method before validation
-            \Log::info('Received image data structure:', [
-                'fotocopy_ktp_count' => count($request->input('fotocopy_ktp', [])),
-                'fotocopy_ktp_sample' => $request->input('fotocopy_ktp.0', 'No data'),
-            ]);
 
         } catch (\Exception $e) {
             \Log::error('Error creating marriage record: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json(['error' => 'Failed to create marriage record'], 500);
         }
     }
@@ -127,10 +122,34 @@ class MarriageController extends Controller
         $processedData = [];
         
         foreach ($imageFields as $field) {
-            $images = $request->input($field, []);
+            $rawImages = $request->input($field);
+            
+            // Handle jika data datang sebagai string JSON
+            if (is_string($rawImages)) {
+                $images = json_decode($rawImages, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    \Log::warning("Invalid JSON for field $field: " . json_last_error_msg());
+                    $images = [];
+                }
+            } else {
+                $images = $rawImages ?? [];
+            }
+
+            // Pastikan $images adalah array
+            if (!is_array($images)) {
+                \Log::warning("Field $field is not an array after processing");
+                $images = [];
+            }
+
+            \Log::info("Processing field $field", [
+                'type' => gettype($images),
+                'count' => is_array($images) ? count($images) : 0,
+                'sample' => is_array($images) && !empty($images) ? array_keys($images[0] ?? []) : 'empty'
+            ]);
+            
             $processedImages = [];
             
-            foreach ($images as $image) {
+            foreach ($images as $index => $image) {
                 // Validate image data structure
                 if (is_array($image) && isset($image['filename'], $image['format'], $image['data'])) {
                     // Optional: Validate base64 data
@@ -142,15 +161,20 @@ class MarriageController extends Controller
                             'size' => $image['size'] ?? strlen($image['data']),
                             'uploaded_at' => $image['uploaded_at'] ?? now()->toISOString(),
                         ];
+                        \Log::info("Successfully processed image {$index} for field {$field}");
                     } else {
-                        \Log::warning("Invalid base64 data for image: " . $image['filename']);
+                        \Log::warning("Invalid base64 data for image: " . ($image['filename'] ?? 'unknown'));
                     }
                 } else {
-                    \Log::warning("Invalid image data structure for field: $field");
+                    \Log::warning("Invalid image data structure for field: $field at index $index", [
+                        'received_keys' => is_array($image) ? array_keys($image) : gettype($image),
+                        'expected_keys' => ['filename', 'format', 'data']
+                    ]);
                 }
             }
             
             $processedData[$field] = $processedImages;
+            \Log::info("Final processed count for $field: " . count($processedImages));
         }
         
         return $processedData;
