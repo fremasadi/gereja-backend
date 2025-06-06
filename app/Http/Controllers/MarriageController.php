@@ -104,6 +104,11 @@ class MarriageController extends Controller
                 'message' => 'Marriage record created successfully', 
                 'data' => $response
             ], 201);
+            // Add this in your store method before validation
+            \Log::info('Received image data structure:', [
+                'fotocopy_ktp_count' => count($request->input('fotocopy_ktp', [])),
+                'fotocopy_ktp_sample' => $request->input('fotocopy_ktp.0', 'No data'),
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('Error creating marriage record: ' . $e->getMessage());
