@@ -25,20 +25,21 @@ class MarriageController extends Controller
     public function index()
 {
     $marriages = Marriage::all()->map(function ($marriage) {
-        $marriage->images = collect($marriage->images)->map(function ($filename) use ($marriage) {
-            // Contoh: "14_fotocopy_ktp_0_20250607052821_6843cdf58e2fb_scaled_1000000033.jpg"
-            $parts = explode('_', $filename);
-            $id = $parts[0] ?? 'unknown';
-            $folder = $parts[1] ?? 'unknown';
+        $marriageId = $marriage->id;
 
-            return "/marriages/{$id}/{$folder}/{$filename}";
+        // Mapping setiap file image
+        $marriage->images = collect($marriage->images)->map(function ($filename) use ($marriageId) {
+            $parts = explode('_', $filename);
+            $field = $parts[1] ?? 'unknown';
+
+            return $this->getFileUrl($filename, $field, $marriageId);
         });
+
         return $marriage;
     });
 
     return response()->json($marriages);
 }
-
 
     public function show($id)
     {
