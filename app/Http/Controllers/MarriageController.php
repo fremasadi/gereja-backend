@@ -22,6 +22,23 @@ class MarriageController extends Controller
         $this->middleware('throttle:10,1')->only('store');
     }
 
+    public function index()
+    {
+        $marriages = Marriage::all();
+        return response()->json($marriages);
+    }
+
+    public function show($id)
+    {
+        $marriage = Marriage::find($id);
+
+        if (!$marriage) {
+            return response()->json(['message' => 'Marriage record not found'], 404);
+        }
+
+        return response()->json($marriage);
+    }
+
     public function store(Request $request)
     {
         // Increase memory limit for large uploads
