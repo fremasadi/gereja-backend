@@ -158,47 +158,44 @@ class MarriageController extends Controller
     }
 
     private function processAndSaveImages(Request $request, $marriageId)
-{
-    $imageFields = $this->getImageFields();
-    $processedData = [];
-    $totalSize = 0;
-    $maxTotalSize = 50 * 1024 * 1024; // 50MB total limit
+    {
+        $imageFields = $this->getImageFields();
+        $processedData = [];
+        $totalSize = 0;
+        $maxTotalSize = 50 * 1024 * 1024;
+        
+        foreach ($imageFields as $field) {
+            $rawImages = $request->input($field);
+            
+            if (is_string($rawImages)) {
+                $images = json_decode($rawImages, true);
+            } else {
+                $images = $rawImages ?? [];
+            }
     
-    foreach ($imageFields as $field) {
-        $rawImages = $request->input($field);
-        
-        // Handle JSON string input
-        if (is_string($rawImages)) {
-            $images = json_decode($rawImages, true);
-        } else {
-            $images = $rawImages ?? [];
-        }
-
-        $processedImages = [];
-        
-        foreach ($images as $index => $image) {
-            // Validate file constraints
-            $this->validateImageConstraints($image);
+            $processedImages = [];
             
-            // Check total size limit
-            $imageSize = strlen(base64_decode($image['data']));
-            $totalSize += $imageSize;
-            
-            if ($totalSize > $maxTotalSize) {
-                throw new \Exception("Total upload size exceeds 50MB limit");
+            foreach ($images as $index => $image) {
+                $this->validateImageConstraints($image);
+                
+                $imageSize = strlen(base64_decode($image['data']));
+                $totalSize += $imageSize;
+                
+                if ($totalSize > $maxTotalSize) {
+                    throw new \Exception("Total upload size exceeds 50MB limit");
+                }
+                
+                $filename = $this->saveImageToStorage($image, $field, $marriageId, $index);
+                $processedImages[] = $filename;
             }
             
-            // Save to storage and get only the filename
-            $filename = $this->saveImageToStorage($image, $field, $marriageId, $index);
-            $processedImages[] = $filename; // Just store the filename string
+            // PENTING: Assign langsung sebagai array, bukan JSON string
+            // Laravel akan otomatis handle JSON conversion karena casting
+            $processedData[$field] = $processedImages;
         }
         
-        // Store as JSON array of filenames
-        $processedData[$field] = json_encode($processedImages);
+        return $processedData;
     }
-    
-    return $processedData;
-}
 
 
     private function getImageFields()
