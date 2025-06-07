@@ -158,46 +158,48 @@ class MarriageController extends Controller
     }
 
     private function processAndSaveImages(Request $request, $marriageId)
-    {
-        $imageFields = $this->getImageFields();
-        $processedData = [];
-        $totalSize = 0;
-        $maxTotalSize = 50 * 1024 * 1024; // 50MB total limit
+{
+    $imageFields = $this->getImageFields();
+    $processedData = [];
+    $totalSize = 0;
+    $maxTotalSize = 50 * 1024 * 1024; // 50MB total limit
+    
+    foreach ($imageFields as $field) {
+        $rawImages = $request->input($field);
         
-        foreach ($imageFields as $field) {
-            $rawImages = $request->input($field);
-            
-            // Handle JSON string input
-            if (is_string($rawImages)) {
-                $images = json_decode($rawImages, true);
-            } else {
-                $images = $rawImages ?? [];
-            }
+        // Handle JSON string input
+        if (is_string($rawImages)) {
+            $images = json_decode($rawImages, true);
+        } else {
+            $images = $rawImages ?? [];
+        }
 
-            $processedImages = [];
+        $processedImages = [];
+        
+        foreach ($images as $index => $image) {
+            // Validate file constraints
+            $this->validateImageConstraints($image);
             
-            foreach ($images as $index => $image) {
-                // Validate file constraints
-                $this->validateImageConstraints($image);
-                
-                // Check total size limit
-                $imageSize = strlen(base64_decode($image['data']));
-                $totalSize += $imageSize;
-                
-                if ($totalSize > $maxTotalSize) {
-                    throw new \Exception("Total upload size exceeds 50MB limit");
-                }
-                
-                // Save to storage and get file info
-                $savedImage = $this->saveImageToStorage($image, $field, $marriageId, $index);
-                $processedImages[] = $savedImage;
+            // Check total size limit
+            $imageSize = strlen(base64_decode($image['data']));
+            $totalSize += $imageSize;
+            
+            if ($totalSize > $maxTotalSize) {
+                throw new \Exception("Total upload size exceeds 50MB limit");
             }
             
-            $processedData[$field] = json_encode($processedImages);
+            // Save to storage and get only the filename
+            $filename = $this->saveImageToStorage($image, $field, $marriageId, $index);
+            $processedImages[] = $filename; // Just store the filename string
         }
         
-        return $processedData;
+        // Store as JSON array of filenames
+        $processedData[$field] = json_encode($processedImages);
     }
+    
+    return $processedData;
+}
+
 
     private function getImageFields()
     {
@@ -276,41 +278,66 @@ class MarriageController extends Controller
     }
 
     private function saveImageToStorage($imageData, $field, $marriageId, $index = 0)
-    {
-        $decoded = base64_decode($imageData['data']);
-        $sanitizedFilename = $this->sanitizeFilename($imageData['filename']);
-        $timestamp = now()->format('YmdHis');
-        $uniqueId = uniqid();
-        $filename = "{$marriageId}_{$field}_{$index}_{$timestamp}_{$uniqueId}_{$sanitizedFilename}";
-        $path = "marriages/{$marriageId}/{$field}/{$filename}";
-        
-        // Ensure directory exists
-        $directory = dirname(storage_path("app/public/{$path}"));
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-        
-        // Save to storage
-        if (!Storage::disk('public')->put($path, $decoded)) {
-            throw new \Exception("Failed to save file: {$imageData['filename']}");
-        }
-        
-        // Verify file was saved correctly
-        if (!Storage::disk('public')->exists($path)) {
-            throw new \Exception("File verification failed: {$imageData['filename']}");
-        }
-        
-        return [
-            'original_filename' => $imageData['filename'],
-            'stored_filename' => $filename,
-            'path' => $path,
-            'format' => strtolower($imageData['format']),
-            'size' => strlen($decoded),
-            'uploaded_at' => now()->toISOString(),
-            'url' => Storage::disk('public')->url($path),
-            'checksum' => hash('sha256', $decoded) // Untuk integrity check
-        ];
+{
+    $decoded = base64_decode($imageData['data']);
+    $sanitizedFilename = $this->sanitizeFilename($imageData['filename']);
+    $timestamp = now()->format('YmdHis');
+    $uniqueId = uniqid();
+    $filename = "{$marriageId}_{$field}_{$index}_{$timestamp}_{$uniqueId}_{$sanitizedFilename}";
+    $path = "marriages/{$marriageId}/{$field}/{$filename}";
+    
+    // Ensure directory exists
+    $directory = dirname(storage_path("app/public/{$path}"));
+    if (!is_dir($directory)) {
+        mkdir($directory, 0755, true);
     }
+    
+    // Save to storage
+    if (!Storage::disk('public')->put($path, $decoded)) {
+        throw new \Exception("Failed to save file: {$imageData['filename']}");
+    }
+    
+    // Verify file was saved correctly
+    if (!Storage::disk('public')->exists($path)) {
+        throw new \Exception("File verification failed: {$imageData['filename']}");
+    }
+    
+    // Return only the filename instead of full object
+    return $filename;
+}
+
+public function getFileUrl($filename, $field, $marriageId)
+{
+    $path = "marriages/{$marriageId}/{$field}/{$filename}";
+    
+    if (Storage::disk('public')->exists($path)) {
+        return Storage::disk('public')->url($path);
+    }
+    
+    return null;
+}
+public function getMarriageFiles($marriageId)
+{
+    $marriage = Marriage::findOrFail($marriageId);
+    $imageFields = $this->getImageFields();
+    $files = [];
+    
+    foreach ($imageFields as $field) {
+        $filenames = json_decode($marriage->$field ?? '[]', true);
+        $files[$field] = [];
+        
+        foreach ($filenames as $filename) {
+            $files[$field][] = [
+                'filename' => $filename,
+                'url' => $this->getFileUrl($filename, $field, $marriageId)
+            ];
+        }
+    }
+    
+    return $files;
+}
+
+
 
     private function cleanupUploadedFiles($marriageId)
     {
@@ -366,15 +393,15 @@ class MarriageController extends Controller
 
     // Method untuk mengambil file (optional)
     public function getFile($marriageId, $field, $filename)
-    {
-        $path = "marriages/{$marriageId}/{$field}/{$filename}";
-        
-        if (!Storage::disk('public')->exists($path)) {
-            return response()->json(['error' => 'File not found'], 404);
-        }
-        
-        return Storage::disk('public')->response($path);
+{
+    $path = "marriages/{$marriageId}/{$field}/{$filename}";
+    
+    if (!Storage::disk('public')->exists($path)) {
+        return response()->json(['error' => 'File not found'], 404);
     }
+    
+    return Storage::disk('public')->response($path);
+}
 
     // Method untuk delete marriage beserta files (optional)
     public function destroy($id)
