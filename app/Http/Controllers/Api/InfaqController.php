@@ -19,7 +19,6 @@ class InfaqController extends Controller{
 
     $validator = Validator::make($request->all(), [
         'amount' => 'required|numeric|min:1000',
-        'type' => 'required|in:' . implode(',', $allowedTypes),
         'message' => 'nullable|string',
         'is_anonymous' => 'boolean',
         'payment_type' => 'required|in:bank_transfer,qris,gopay',
@@ -40,7 +39,6 @@ class InfaqController extends Controller{
         'donor_email' => $user->email,
         'donor_phone' => $user->phone ?? null,
         'amount' => $request->amount,
-        'type' => $request->type,
         'message' => $request->message,
         'is_anonymous' => $request->is_anonymous ?? false,
         'status' => 'pending',
