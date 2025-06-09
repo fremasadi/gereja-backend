@@ -71,8 +71,8 @@ class InfaqResource extends Resource
                 // Tables\Columns\IconColumn::make('is_anonymous')
                 //     ->boolean(),
                 Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('payment_type')
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('payment_type')
+                //     ->searchable(),
                 // Tables\Columns\TextColumn::make('payment_code')
                 //     ->searchable(),
                 // Tables\Columns\TextColumn::make('transaction_time')
