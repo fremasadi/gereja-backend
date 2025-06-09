@@ -9,29 +9,30 @@ use Illuminate\Support\Facades\Validator;
 use Midtrans\Snap;
 use Midtrans\Config;
 use Illuminate\Support\Facades\Auth;
+class InfaqController extends Controller{  
 
-class InfaqController extends Controller
+    public function create(Request $request)
 {
-    
-public function create(Request $request)
-{
-    $user = $request->user(); // Ambil dari token
-    $orderId = Infaq::generateOrderId();
+    $user = $request->user();
+
+    $allowedTypes = ['Persembahan'];
 
     $validator = Validator::make($request->all(), [
         'amount' => 'required|numeric|min:1000',
-        'type' => 'required|string',
+        'type' => 'required|in:' . implode(',', $allowedTypes),
         'message' => 'nullable|string',
         'is_anonymous' => 'boolean',
-        'payment_type' => 'required|in:bank_transfer,qris,gopay'
+        'payment_type' => 'required|in:bank_transfer,qris,gopay',
     ]);
 
     if ($validator->fails()) {
         return response()->json([
-            'status' => false,
-            'message' => $validator->errors()->first(),
+            'success' => false,
+            'errors' => $validator->errors()
         ], 422);
     }
+
+    $orderId = Infaq::generateOrderId();
 
     $infaq = Infaq::create([
         'order_id' => $orderId,
