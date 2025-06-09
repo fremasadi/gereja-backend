@@ -22,6 +22,7 @@ use App\Http\Controllers\MarriageController;
 */
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);    
+Route::post('/infaq/callback', [InfaqController::class, 'callback'])->name('infaq.callback');
 
 
 Route::middleware('auth:sanctum')->group(function () {
