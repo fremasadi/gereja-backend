@@ -45,6 +45,22 @@ class InfaqController extends Controller{
         'payment_type' => $request->payment_type,
     ]);
 
+    $midtransResponse = Snap::createTransaction($params);
+    $responseData = $midtransResponse->jsonSerialize(); // konversi ke array
+
+    $va = $responseData['va_numbers'][0] ?? [];
+
+    $infaq->payment()->create([
+        'payment_type' => $responseData['payment_type'],
+        'payment_status' => $responseData['transaction_status'],
+        'payment_gateway_response' => $responseData,
+        'payment_va_name' => $va['bank'] ?? null,
+        'payment_va_number' => $va['va_number'] ?? null,
+        'gross_amount' => $responseData['gross_amount'],
+        'transaction_time' => $responseData['transaction_time'],
+        'expired_at' => $responseData['expiry_time'] ?? null,
+    ]);
+
     // Konfigurasi Midtrans
     Config::$serverKey = env('MIDTRANS_SERVER_KEY');
     Config::$isProduction = env('MIDTRANS_ENV') === 'production';
@@ -71,6 +87,7 @@ class InfaqController extends Controller{
             'message' => 'Infaq created successfully',
             'snap_token' => $snapToken,
             'infaq' => $infaq,
+            'payment' => $payment
         ], 200);
     } catch (\Exception $e) {
         return response()->json([

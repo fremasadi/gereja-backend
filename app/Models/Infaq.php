@@ -118,4 +118,10 @@ class Infaq extends Model
         
         return $prefix . '-' . $timestamp . '-' . $random;
     }
+
+    public function payment()
+{
+    return $this->morphOne(Payment::class, 'payable');
+}
+
 }
