@@ -11,11 +11,20 @@ use Midtrans\Config;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Database;
 
 class InfaqController extends Controller
 {
+    private $firebaseDatabase;
+
     public function __construct()
     {
+        $this->firebaseDatabase = (new Factory)
+        ->withServiceAccount(config('firebase.firebase.service_account'))
+        ->withDatabaseUri('https://fre-kantin-default-rtdb.firebaseio.com') // Pastikan menggunakan URL yang benar
+        ->createDatabase();
+
         Config::$serverKey = env('MIDTRANS_SERVER_KEY');
         Config::$clientKey = env('MIDTRANS_CLIENT_KEY');
         Config::$isProduction = env('MIDTRANS_ENV') === 'production';
@@ -104,6 +113,15 @@ class InfaqController extends Controller
                 'payment_va_number' => $paymentGatewayResponse['va_number'],
                 'payment_qr_url' => $paymentGatewayResponse['qr_string'],
                 'payment_deeplink' => $paymentGatewayResponse['deeplink_redirect'],
+            ]);
+
+            $this->firebaseDatabase
+            ->getReference('notifications/infaq')
+            ->push([
+                'order_id' => $orderId,
+                'total_amount' => $request->amount,
+                'status' =>'pending',
+                'timestamp' => Carbon::now()->timestamp,
             ]);
 
             return response()->json([
