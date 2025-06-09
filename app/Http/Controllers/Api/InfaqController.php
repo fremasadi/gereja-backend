@@ -116,7 +116,7 @@ class InfaqController extends Controller
             ]);
 
             $this->firebaseDatabase
-            ->getReference('infaq/persembahan')
+            ->getReference('notifications/orders')
             ->push([
                 'order_id' => $orderId,
                 'total_amount' => $request->amount,
@@ -433,14 +433,14 @@ private function updateFirebaseInfaq($orderId, $status, $amount)
 {
     try {
         // Cari reference berdasarkan order_id
-        $infaqRef = $this->firebaseDatabase->getReference('infaq/persembahan');
+        $infaqRef = $this->firebaseDatabase->getReference('notifications/orders');
         $snapshot = $infaqRef->orderByChild('order_id')->equalTo($orderId)->getSnapshot();
         
         if ($snapshot->exists()) {
             foreach ($snapshot->getValue() as $key => $value) {
                 // Update status di Firebase
                 $this->firebaseDatabase
-                    ->getReference('infaq/persembahan/' . $key)
+                    ->getReference('n/persembahan/' . $key)
                     ->update([
                         'status' => $status,
                         'updated_at' => Carbon::now()->timestamp,
