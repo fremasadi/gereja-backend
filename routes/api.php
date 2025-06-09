@@ -9,6 +9,7 @@ use App\Http\Controllers\SeatBookingController;
 use App\Http\Controllers\Api\InfaqController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\MarriageController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/infaq', [InfaqController::class, 'create']);
+    Route::get('/user/profile', [UserController::class, 'profile']);
+
 
 });
 
