@@ -39,12 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/marriages', [MarriageController::class, 'store']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/infaq', [InfaqController::class, 'create']);
 
 });
 
 
-Route::prefix('infaq')->controller(App\Http\Controllers\Api\InfaqController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::post('/', 'store');
-    Route::get('/{id}', 'show');
-});

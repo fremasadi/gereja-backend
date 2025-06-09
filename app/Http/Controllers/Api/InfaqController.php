@@ -8,97 +8,77 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Midtrans\Snap;
 use Midtrans\Config;
+use Illuminate\Support\Facades\Auth;
 
 class InfaqController extends Controller
 {
-    public function __construct()
-    {
-        // Setup Midtrans
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+    
+public function create(Request $request)
+{
+    $user = $request->user(); // Ambil dari token
+    $orderId = Infaq::generateOrderId();
+
+    $validator = Validator::make($request->all(), [
+        'amount' => 'required|numeric|min:1000',
+        'type' => 'required|string',
+        'message' => 'nullable|string',
+        'is_anonymous' => 'boolean',
+        'payment_type' => 'required|in:bank_transfer,qris,gopay'
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => $validator->errors()->first(),
+        ], 422);
     }
 
-    // ✅ Get list of infaq (with optional filter)
-    public function index(Request $request)
-    {
-        $query = Infaq::query();
+    $infaq = Infaq::create([
+        'order_id' => $orderId,
+        'donor_name' => $user->name,
+        'donor_email' => $user->email,
+        'donor_phone' => $user->phone ?? null,
+        'amount' => $request->amount,
+        'type' => $request->type,
+        'message' => $request->message,
+        'is_anonymous' => $request->is_anonymous ?? false,
+        'status' => 'pending',
+        'payment_type' => $request->payment_type,
+    ]);
 
-        if ($request->has('type')) {
-            $query->byType($request->type);
-        }
+    // Konfigurasi Midtrans
+    Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+    Config::$isProduction = env('MIDTRANS_ENV') === 'production';
+    Config::$isSanitized = true;
+    Config::$is3ds = true;
 
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
+    $transactionData = [
+        'transaction_details' => [
+            'order_id' => $orderId,
+            'gross_amount' => $infaq->amount,
+        ],
+        'customer_details' => [
+            'first_name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone ?? '081234567890'
+        ]
+    ];
+
+    try {
+        $snapToken = Snap::getSnapToken($transactionData);
 
         return response()->json([
-            'success' => true,
-            'data' => $query->latest()->paginate(10)
-        ]);
-    }
-
-    // ✅ Store new donation request and create Snap token
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'donor_name' => 'required|string|max:255',
-            'donor_email' => 'nullable|email|max:255',
-            'donor_phone' => 'nullable|string|max:20',
-            'amount' => 'required|numeric|min:1000',
-            'type' => 'required|in:infaq,sedekah,zakat,pembangunan,lainnya',
-            'message' => 'nullable|string',
-            'is_anonymous' => 'boolean'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        // Create order
-        $order_id = Infaq::generateOrderId();
-
-        $infaq = Infaq::create([
-            ...$validator->validated(),
-            'order_id' => $order_id,
-            'status' => 'pending'
-        ]);
-
-        // Midtrans payload
-        $params = [
-            'transaction_details' => [
-                'order_id' => $order_id,
-                'gross_amount' => $infaq->amount
-            ],
-            'customer_details' => [
-                'first_name' => $infaq->donor_name,
-                'email' => $infaq->donor_email,
-                'phone' => $infaq->donor_phone
-            ]
-        ];
-
-        // Get Snap token
-        $snapToken = Snap::getSnapToken($params);
-
+            'status' => true,
+            'message' => 'Infaq created successfully',
+            'snap_token' => $snapToken,
+            'infaq' => $infaq,
+        ], 200);
+    } catch (\Exception $e) {
         return response()->json([
-            'success' => true,
-            'data' => $infaq,
-            'snap_token' => $snapToken
-        ]);
+            'status' => false,
+            'message' => 'Failed to create Snap Token: ' . $e->getMessage(),
+        ], 500);
     }
+}
 
-    // ✅ Show single donation
-    public function show($id)
-    {
-        $infaq = Infaq::findOrFail($id);
-
-        return response()->json([
-            'success' => true,
-            'data' => $infaq
-        ]);
-    }
 }

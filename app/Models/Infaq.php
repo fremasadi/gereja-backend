@@ -15,7 +15,6 @@ class Infaq extends Model
         'transaction_id',
         'donor_name',
         'donor_email',
-        'donor_phone',
         'amount',
         'type',
         'message',
