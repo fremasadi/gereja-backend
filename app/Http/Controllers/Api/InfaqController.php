@@ -68,19 +68,32 @@ class InfaqController extends Controller
         try {
             // Create Midtrans transaction
             $midtransResponse = Snap::createTransaction($params);
-            $responseData = $midtransResponse->jsonSerialize();
+            
+            // Handle response based on its type
+            if (is_array($midtransResponse)) {
+                $responseData = $midtransResponse;
+            } elseif (is_object($midtransResponse)) {
+                // Convert object to array
+                $responseData = json_decode(json_encode($midtransResponse), true);
+            } else {
+                // If it's a string (JSON), decode it
+                $responseData = json_decode($midtransResponse, true);
+            }
 
-            $va = $responseData['va_numbers'][0] ?? [];
+            // Safely access array elements
+            $va = isset($responseData['va_numbers']) && is_array($responseData['va_numbers']) 
+                ? ($responseData['va_numbers'][0] ?? []) 
+                : [];
 
-            // Create payment record
+            // Create payment record with safe array access
             $payment = $infaq->payment()->create([
-                'payment_type' => $responseData['payment_type'],
-                'payment_status' => $responseData['transaction_status'],
+                'payment_type' => $responseData['payment_type'] ?? null,
+                'payment_status' => $responseData['transaction_status'] ?? 'pending',
                 'payment_gateway_response' => $responseData,
                 'payment_va_name' => $va['bank'] ?? null,
                 'payment_va_number' => $va['va_number'] ?? null,
-                'gross_amount' => $responseData['gross_amount'],
-                'transaction_time' => $responseData['transaction_time'],
+                'gross_amount' => $responseData['gross_amount'] ?? $infaq->amount,
+                'transaction_time' => $responseData['transaction_time'] ?? now(),
                 'expired_at' => $responseData['expiry_time'] ?? null,
             ]);
 
