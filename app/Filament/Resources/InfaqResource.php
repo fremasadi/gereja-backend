@@ -59,8 +59,8 @@ class InfaqResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('order_id')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('transaction_id')
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('transaction_id')
+                //     ->searchable(),
                 Tables\Columns\TextColumn::make('donor_name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('donor_email')
@@ -113,8 +113,8 @@ class InfaqResource extends Resource
     {
         return [
             'index' => Pages\ListInfaqs::route('/'),
-            'create' => Pages\CreateInfaq::route('/create'),
-            'edit' => Pages\EditInfaq::route('/{record}/edit'),
+            // 'create' => Pages\CreateInfaq::route('/create'),
+            // 'edit' => Pages\EditInfaq::route('/{record}/edit'),
         ];
     }
 }
