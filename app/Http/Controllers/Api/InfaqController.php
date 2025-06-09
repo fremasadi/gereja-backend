@@ -116,7 +116,7 @@ class InfaqController extends Controller
             ]);
 
             $this->firebaseDatabase
-            ->getReference('notifications/infaq')
+            ->getReference('infaq/persembahan')
             ->push([
                 'order_id' => $orderId,
                 'total_amount' => $request->amount,
