@@ -258,293 +258,293 @@ class InfaqController extends Controller
     }
 
     public function callback(Request $request)
-{
-    try {
-        // Ambil raw input dari request
-        $serverKey = env('MIDTRANS_SERVER_KEY');
-        $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
-        
-        // Verifikasi signature untuk keamanan
-        if ($hashed !== $request->signature_key) {
-            Log::warning('Invalid signature key for infaq callback', [
+    {
+        try {
+            // Ambil raw input dari request
+            $serverKey = env('MIDTRANS_SERVER_KEY');
+            $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
+            
+            // Verifikasi signature untuk keamanan
+            if ($hashed !== $request->signature_key) {
+                Log::warning('Invalid signature key for infaq callback', [
+                    'order_id' => $request->order_id,
+                    'signature_received' => $request->signature_key,
+                    'signature_calculated' => $hashed
+                ]);
+                
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid signature'
+                ], 400);
+            }
+    
+            // Cari infaq berdasarkan order_id
+            $infaq = Infaq::where('order_id', $request->order_id)->first();
+            
+            if (!$infaq) {
+                Log::error('Infaq not found for callback', ['order_id' => $request->order_id]);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Infaq not found'
+                ], 404);
+            }
+    
+            // Ambil payment record terkait
+            $payment = $infaq->payment;
+            
+            if (!$payment) {
+                Log::error('Payment record not found for infaq', ['order_id' => $request->order_id]);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Payment record not found'
+                ], 404);
+            }
+    
+            // Tentukan status berdasarkan transaction_status dari Midtrans
+            $transactionStatus = $request->transaction_status;
+            $fraudStatus = $request->fraud_status ?? null;
+            
+            Log::info('Infaq callback received', [
                 'order_id' => $request->order_id,
-                'signature_received' => $request->signature_key,
-                'signature_calculated' => $hashed
+                'transaction_status' => $transactionStatus,
+                'fraud_status' => $fraudStatus,
+                'payment_type' => $request->payment_type,
+                'gross_amount' => $request->gross_amount
+            ]);
+    
+            // Update status berdasarkan transaction_status
+            switch ($transactionStatus) {
+                case 'capture':
+                    if ($fraudStatus == 'challenge') {
+                        $this->updateInfaqStatus($infaq, $payment, 'pending', $request);
+                    } else if ($fraudStatus == 'accept') {
+                        $this->updateInfaqStatus($infaq, $payment, 'paid', $request);
+                    }
+                    break;
+                    
+                case 'settlement':
+                    $this->updateInfaqStatus($infaq, $payment, 'paid', $request);
+                    break;
+                    
+                case 'pending':
+                    $this->updateInfaqStatus($infaq, $payment, 'pending', $request);
+                    break;
+                    
+                case 'deny':
+                    $this->updateInfaqStatus($infaq, $payment, 'failed', $request);
+                    break;
+                    
+                case 'expire':
+                    $this->updateInfaqStatus($infaq, $payment, 'expired', $request);
+                    break;
+                    
+                case 'cancel':
+                    $this->updateInfaqStatus($infaq, $payment, 'cancelled', $request);
+                    break;
+                    
+                case 'refund':
+                    $this->updateInfaqStatus($infaq, $payment, 'refunded', $request);
+                    break;
+                    
+                case 'partial_refund':
+                    $this->updateInfaqStatus($infaq, $payment, 'refunded', $request);
+                    break;
+                    
+                case 'failure':
+                    $this->updateInfaqStatus($infaq, $payment, 'failed', $request);
+                    break;
+                    
+                default:
+                    Log::warning('Unknown transaction status for infaq', [
+                        'order_id' => $request->order_id,
+                        'transaction_status' => $transactionStatus
+                    ]);
+                    break;
+            }
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Callback processed successfully'
+            ], 200);
+    
+        } catch (\Exception $e) {
+            Log::error('Infaq callback processing failed: ' . $e->getMessage(), [
+                'order_id' => $request->order_id ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid signature'
-            ], 400);
+                'message' => 'Callback processing failed'
+            ], 500);
         }
-
-        // Cari infaq berdasarkan order_id
-        $infaq = Infaq::where('order_id', $request->order_id)->first();
-        
-        if (!$infaq) {
-            Log::error('Infaq not found for callback', ['order_id' => $request->order_id]);
-            return response()->json([
-                'status' => false,
-                'message' => 'Infaq not found'
-            ], 404);
-        }
-
-        // Ambil payment record terkait
-        $payment = $infaq->payment;
-        
-        if (!$payment) {
-            Log::error('Payment record not found for infaq', ['order_id' => $request->order_id]);
-            return response()->json([
-                'status' => false,
-                'message' => 'Payment record not found'
-            ], 404);
-        }
-
-        // Tentukan status berdasarkan transaction_status dari Midtrans
-        $transactionStatus = $request->transaction_status;
-        $fraudStatus = $request->fraud_status ?? null;
-        
-        Log::info('Infaq callback received', [
-            'order_id' => $request->order_id,
-            'transaction_status' => $transactionStatus,
-            'fraud_status' => $fraudStatus,
-            'payment_type' => $request->payment_type,
-            'gross_amount' => $request->gross_amount
-        ]);
-
-        // Update status berdasarkan transaction_status
-        switch ($transactionStatus) {
-            case 'capture':
-                if ($fraudStatus == 'challenge') {
-                    $this->updateInfaqStatus($infaq, $payment, 'challenge', $request);
-                } else if ($fraudStatus == 'accept') {
-                    $this->updateInfaqStatus($infaq, $payment, 'success', $request);
-                }
-                break;
-                
-            case 'settlement':
-                $this->updateInfaqStatus($infaq, $payment, 'success', $request);
-                break;
-                
-            case 'pending':
-                $this->updateInfaqStatus($infaq, $payment, 'pending', $request);
-                break;
-                
-            case 'deny':
-                $this->updateInfaqStatus($infaq, $payment, 'failed', $request);
-                break;
-                
-            case 'expire':
-                $this->updateInfaqStatus($infaq, $payment, 'expired', $request);
-                break;
-                
-            case 'cancel':
-                $this->updateInfaqStatus($infaq, $payment, 'cancelled', $request);
-                break;
-                
-            case 'refund':
-                $this->updateInfaqStatus($infaq, $payment, 'refunded', $request);
-                break;
-                
-            case 'partial_refund':
-                $this->updateInfaqStatus($infaq, $payment, 'partial_refunded', $request);
-                break;
-                
-            case 'failure':
-                $this->updateInfaqStatus($infaq, $payment, 'failed', $request);
-                break;
-                
-            default:
-                Log::warning('Unknown transaction status for infaq', [
-                    'order_id' => $request->order_id,
-                    'transaction_status' => $transactionStatus
-                ]);
-                break;
-        }
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Callback processed successfully'
-        ], 200);
-
-    } catch (\Exception $e) {
-        Log::error('Infaq callback processing failed: ' . $e->getMessage(), [
-            'order_id' => $request->order_id ?? null,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        
-        return response()->json([
-            'status' => false,
-            'message' => 'Callback processing failed'
-        ], 500);
     }
-}
-
-private function updateInfaqStatus($infaq, $payment, $status, $request)
-{
-    try {
-        // Update infaq status
-        $infaq->update([
-            'status' => $status,
-            'updated_at' => Carbon::now()
-        ]);
-
-        // Update payment record
-        $paymentUpdateData = [
-            'payment_status' => $status,
-            'payment_gateway_response' => json_encode($request->all()),
-            'updated_at' => Carbon::now()
-        ];
-
-        // Jika status success, update payment_date
-        if ($status === 'success') {
-            $paymentUpdateData['payment_date'] = Carbon::now();
-            $paymentUpdateData['settlement_time'] = $request->settlement_time ?? Carbon::now();
-        }
-
-        $payment->update($paymentUpdateData);
-
-        // Update Firebase
-        $this->updateFirebaseInfaq($infaq->order_id, $status, $infaq->amount);
-
-        // Jika pembayaran berhasil, kirim notifikasi atau email (opsional)
-        if ($status === 'success') {
-            $this->handleSuccessfulPayment($infaq);
-        }
-
-        Log::info('Infaq status updated successfully', [
-            'order_id' => $infaq->order_id,
-            'status' => $status,
-            'amount' => $infaq->amount
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('Failed to update infaq status: ' . $e->getMessage(), [
-            'order_id' => $infaq->order_id,
-            'status' => $status,
-            'error' => $e->getMessage()
-        ]);
-        throw $e;
-    }
-}
-
-private function updateFirebaseInfaq($orderId, $status, $amount)
-{
-    try {
-        // Cari reference berdasarkan order_id
-        $infaqRef = $this->firebaseDatabase->getReference('notifications/orders');
-        $snapshot = $infaqRef->orderByChild('order_id')->equalTo($orderId)->getSnapshot();
-        
-        if ($snapshot->exists()) {
-            foreach ($snapshot->getValue() as $key => $value) {
-                // Update status di Firebase
-                $this->firebaseDatabase
-                    ->getReference('n/persembahan/' . $key)
-                    ->update([
-                        'status' => $status,
-                        'updated_at' => Carbon::now()->timestamp,
-                        'payment_date' => $status === 'success' ? Carbon::now()->timestamp : null
-                    ]);
-                
-                // Jika status success, update total collected (opsional)
-                if ($status === 'success') {
-                    $this->updateFirebaseTotalCollected($amount);
-                }
-                
-                break; // Hanya update yang pertama ditemukan
+    
+    private function updateInfaqStatus($infaq, $payment, $status, $request)
+    {
+        try {
+            // Update infaq status
+            $infaq->update([
+                'status' => $status,
+                'updated_at' => Carbon::now()
+            ]);
+    
+            // Update payment record
+            $paymentUpdateData = [
+                'payment_status' => $status,
+                'payment_gateway_response' => json_encode($request->all()),
+                'updated_at' => Carbon::now()
+            ];
+    
+            // Jika status success, update payment_date
+            if (in_array($status, ['paid', 'completed'])) {
+                $paymentUpdateData['payment_date'] = Carbon::now();
+                $paymentUpdateData['settlement_time'] = $request->settlement_time ?? Carbon::now();
             }
-        } else {
-            Log::warning('Firebase infaq record not found', ['order_id' => $orderId]);
+    
+            $payment->update($paymentUpdateData);
+    
+            // Update Firebase
+            $this->updateFirebaseInfaq($infaq->order_id, $status, $infaq->amount);
+    
+            // Jika pembayaran berhasil, kirim notifikasi atau email (opsional)
+            if (in_array($status, ['paid', 'completed'])) {
+                $this->handleSuccessfulPayment($infaq);
+            }
+    
+            Log::info('Infaq status updated successfully', [
+                'order_id' => $infaq->order_id,
+                'status' => $status,
+                'amount' => $infaq->amount
+            ]);
+    
+        } catch (\Exception $e) {
+            Log::error('Failed to update infaq status: ' . $e->getMessage(), [
+                'order_id' => $infaq->order_id,
+                'status' => $status,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
         }
-
-    } catch (\Exception $e) {
-        Log::error('Failed to update Firebase infaq: ' . $e->getMessage(), [
-            'order_id' => $orderId,
-            'status' => $status
-        ]);
-        // Jangan throw exception di sini agar tidak mengganggu proses utama
     }
-}
-
-private function updateFirebaseTotalCollected($amount)
-{
-    try {
-        // Update total collected di Firebase (opsional)
-        $totalRef = $this->firebaseDatabase->getReference('infaq/statistics/total_collected');
-        $currentTotal = $totalRef->getSnapshot()->getValue() ?? 0;
-        $newTotal = $currentTotal + $amount;
-        
-        $totalRef->set($newTotal);
-        
-        // Update juga monthly statistics
-        $currentMonth = Carbon::now()->format('Y-m');
-        $monthlyRef = $this->firebaseDatabase->getReference('infaq/statistics/monthly/' . $currentMonth);
-        $currentMonthly = $monthlyRef->getSnapshot()->getValue() ?? 0;
-        $newMonthly = $currentMonthly + $amount;
-        
-        $monthlyRef->set($newMonthly);
-
-    } catch (\Exception $e) {
-        Log::error('Failed to update Firebase statistics: ' . $e->getMessage());
+    
+    private function updateFirebaseInfaq($orderId, $status, $amount)
+    {
+        try {
+            // Cari reference berdasarkan order_id
+            $infaqRef = $this->firebaseDatabase->getReference('infaq/persembahan');
+            $snapshot = $infaqRef->orderByChild('order_id')->equalTo($orderId)->getSnapshot();
+            
+            if ($snapshot->exists()) {
+                foreach ($snapshot->getValue() as $key => $value) {
+                    // Update status di Firebase
+                    $this->firebaseDatabase
+                        ->getReference('infaq/persembahan/' . $key)
+                        ->update([
+                            'status' => $status,
+                            'updated_at' => Carbon::now()->timestamp,
+                            'payment_date' => $status === 'success' ? Carbon::now()->timestamp : null
+                        ]);
+                    
+                    // Jika status success, update total collected (opsional)
+                    if (in_array($status, ['paid', 'completed'])) {
+                        $this->updateFirebaseTotalCollected($amount);
+                    }
+                    
+                    break; // Hanya update yang pertama ditemukan
+                }
+            } else {
+                Log::warning('Firebase infaq record not found', ['order_id' => $orderId]);
+            }
+    
+        } catch (\Exception $e) {
+            Log::error('Failed to update Firebase infaq: ' . $e->getMessage(), [
+                'order_id' => $orderId,
+                'status' => $status
+            ]);
+            // Jangan throw exception di sini agar tidak mengganggu proses utama
+        }
     }
-}
-
-private function handleSuccessfulPayment($infaq)
-{
-    try {
-        // Tambahkan logika untuk pembayaran berhasil
-        // Misalnya: kirim email konfirmasi, notifikasi, dll
-        
-        Log::info('Infaq payment successful', [
-            'order_id' => $infaq->order_id,
-            'donor_name' => $infaq->donor_name,
-            'amount' => $infaq->amount,
-            'is_anonymous' => $infaq->is_anonymous
-        ]);
-
-        // Contoh: Update cache atau trigger event lainnya
-        // Cache::forget('total_infaq_collected');
-        // event(new InfaqPaymentSuccessful($infaq));
-
-    } catch (\Exception $e) {
-        Log::error('Failed to handle successful infaq payment: ' . $e->getMessage(), [
-            'order_id' => $infaq->order_id
-        ]);
+    
+    private function updateFirebaseTotalCollected($amount)
+    {
+        try {
+            // Update total collected di Firebase (opsional)
+            $totalRef = $this->firebaseDatabase->getReference('infaq/statistics/total_collected');
+            $currentTotal = $totalRef->getSnapshot()->getValue() ?? 0;
+            $newTotal = $currentTotal + $amount;
+            
+            $totalRef->set($newTotal);
+            
+            // Update juga monthly statistics
+            $currentMonth = Carbon::now()->format('Y-m');
+            $monthlyRef = $this->firebaseDatabase->getReference('infaq/statistics/monthly/' . $currentMonth);
+            $currentMonthly = $monthlyRef->getSnapshot()->getValue() ?? 0;
+            $newMonthly = $currentMonthly + $amount;
+            
+            $monthlyRef->set($newMonthly);
+    
+        } catch (\Exception $e) {
+            Log::error('Failed to update Firebase statistics: ' . $e->getMessage());
+        }
     }
-}
-
-// Method untuk mendapatkan status infaq (opsional, untuk debugging)
-public function checkStatus($orderId)
-{
-    try {
-        $infaq = Infaq::where('order_id', $orderId)->with('payment')->first();
-        
-        if (!$infaq) {
+    
+    private function handleSuccessfulPayment($infaq)
+    {
+        try {
+            // Tambahkan logika untuk pembayaran berhasil
+            // Misalnya: kirim email konfirmasi, notifikasi, dll
+            
+            Log::info('Infaq payment successful', [
+                'order_id' => $infaq->order_id,
+                'donor_name' => $infaq->donor_name,
+                'amount' => $infaq->amount,
+                'is_anonymous' => $infaq->is_anonymous
+            ]);
+    
+            // Contoh: Update cache atau trigger event lainnya
+            // Cache::forget('total_infaq_collected');
+            // event(new InfaqPaymentSuccessful($infaq));
+    
+        } catch (\Exception $e) {
+            Log::error('Failed to handle successful infaq payment: ' . $e->getMessage(), [
+                'order_id' => $infaq->order_id
+            ]);
+        }
+    }
+    
+    // Method untuk mendapatkan status infaq (opsional, untuk debugging)
+    public function checkStatus($orderId)
+    {
+        try {
+            $infaq = Infaq::where('order_id', $orderId)->with('payment')->first();
+            
+            if (!$infaq) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Infaq not found'
+                ], 404);
+            }
+    
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'order_id' => $infaq->order_id,
+                    'amount' => $infaq->amount,
+                    'status' => $infaq->status,
+                    'donor_name' => $infaq->is_anonymous ? 'Anonymous' : $infaq->donor_name,
+                    'payment' => $infaq->payment,
+                    'created_at' => $infaq->created_at,
+                    'updated_at' => $infaq->updated_at
+                ]
+            ], 200);
+    
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Infaq not found'
-            ], 404);
+                'message' => 'Error checking infaq status: ' . $e->getMessage()
+            ], 500);
         }
-
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'order_id' => $infaq->order_id,
-                'amount' => $infaq->amount,
-                'status' => $infaq->status,
-                'donor_name' => $infaq->is_anonymous ? 'Anonymous' : $infaq->donor_name,
-                'payment' => $infaq->payment,
-                'created_at' => $infaq->created_at,
-                'updated_at' => $infaq->updated_at
-            ]
-        ], 200);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Error checking infaq status: ' . $e->getMessage()
-        ], 500);
     }
-}
 }
