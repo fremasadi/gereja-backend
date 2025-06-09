@@ -36,7 +36,7 @@ class InfaqController extends Controller
     {
         $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         do {
-            $randomString = 'INFAQ-';
+            $randomString = 'BETHANY-';
             for ($i = 0; $i < 7; $i++) {
                 $randomString .= $characters[mt_rand(0, strlen($characters) - 1)];
             }
