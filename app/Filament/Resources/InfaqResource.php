@@ -18,6 +18,14 @@ class InfaqResource extends Resource
     protected static ?string $model = Infaq::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Persembahan';
+
+    public static function getModelLabel(): string
+    {
+        return 'Persembahan';
+    }
+
+
 
     public static function form(Form $form): Form
     {
