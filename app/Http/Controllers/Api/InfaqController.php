@@ -432,22 +432,28 @@ private function updateInfaqStatus($infaq, $payment, $status, $request)
 private function updateFirebaseInfaq($orderId, $status, $amount)
 {
     try {
-        // Cari reference berdasarkan order_id
-        $infaqRef = $this->firebaseDatabase->getReference('notifications/orders');
-        $snapshot = $infaqRef->orderByChild('order_id')->equalTo($orderId)->getSnapshot();
+        // Cari reference berdasarkan order_id di notifications/orders
+        $ordersRef = $this->firebaseDatabase->getReference('notifications/orders');
+        $snapshot = $ordersRef->orderByChild('order_id')->equalTo($orderId)->getSnapshot();
         
         if ($snapshot->exists()) {
             foreach ($snapshot->getValue() as $key => $value) {
-                // Update status di Firebase
+                // Update record yang sudah ada di notifications/orders
                 $this->firebaseDatabase
-                    ->getReference('n/persembahan/' . $key)
+                    ->getReference('notifications/orders/' . $key)
                     ->update([
                         'status' => $status,
                         'updated_at' => Carbon::now()->timestamp,
                         'payment_date' => $status === 'success' ? Carbon::now()->timestamp : null
                     ]);
                 
-                // Jika status success, update total collected (opsional)
+                Log::info('Firebase notification/orders updated', [
+                    'firebase_key' => $key,
+                    'order_id' => $orderId,
+                    'status' => $status
+                ]);
+                
+                // Jika status success, update total collected
                 if ($status === 'success') {
                     $this->updateFirebaseTotalCollected($amount);
                 }
@@ -455,13 +461,17 @@ private function updateFirebaseInfaq($orderId, $status, $amount)
                 break; // Hanya update yang pertama ditemukan
             }
         } else {
-            Log::warning('Firebase infaq record not found', ['order_id' => $orderId]);
+            Log::warning('Firebase order record not found', [
+                'order_id' => $orderId,
+                'searched_in' => 'notifications/orders'
+            ]);
         }
 
     } catch (\Exception $e) {
-        Log::error('Failed to update Firebase infaq: ' . $e->getMessage(), [
+        Log::error('Failed to update Firebase order: ' . $e->getMessage(), [
             'order_id' => $orderId,
-            'status' => $status
+            'status' => $status,
+            'error' => $e->getMessage()
         ]);
         // Jangan throw exception di sini agar tidak mengganggu proses utama
     }
