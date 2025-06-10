@@ -27,23 +27,23 @@ class AttendanceController extends Controller
             ], 403);
         }
 
-        // Hitung waktu check-in dari data barcode
-        $checkinStartTime = Carbon::parse("{$validated['tanggal']} {$validated['checkin_time']}")->subMinutes(20);
+        // Hitung waktu awal boleh check-in: 20 menit sebelum waktu checkin
+        $earliestCheckInTime = Carbon::parse("{$validated['tanggal']} {$validated['checkin_time']}")->subMinutes(20);
 
-        if (now()->lt($checkinStartTime)) {
+        if (now()->lt($earliestCheckInTime)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Belum boleh melakukan check-in. Maksimal 20 menit sebelum waktu check-in.',
+                'message' => 'Belum boleh melakukan absensi. Tunggu hingga 20 menit sebelum waktu check-in.',
             ], 403);
         }
 
-        // Cek apakah absensi untuk tanggal ini sudah ada
+        // Cek apakah absensi sudah ada
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('attendance_date', $validated['tanggal'])
             ->first();
 
         if (!$attendance) {
-            // Pertama kali, lakukan check-in
+            // Belum ada, lakukan check-in
             $attendance = Attendance::create([
                 'user_id' => $user->id,
                 'attendance_date' => $validated['tanggal'],
@@ -59,7 +59,7 @@ class AttendanceController extends Controller
         }
 
         if (is_null($attendance->check_out_at)) {
-            // Sudah check-in tapi belum check-out
+            // Sudah check-in, sekarang checkout
             $attendance->update([
                 'check_out_at' => now(),
             ]);
@@ -75,7 +75,7 @@ class AttendanceController extends Controller
         // Sudah check-in dan check-out
         return response()->json([
             'status' => false,
-            'message' => 'Anda sudah check-in dan check-out untuk tanggal ini.',
+            'message' => 'Anda sudah check-in dan check-out hari ini.',
         ], 400);
     }
 }
