@@ -37,43 +37,40 @@ class BarcodeResource extends Resource
     }
 
     public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('tanggal')
-                ->date()
-                ->sortable(),
-            Tables\Columns\TextColumn::make('checkin_time'),
-        ])
-        ->filters([
-            //
-        ])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-        ])
-        ->headerActions([
-            Action::make('Download PDF')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->label('Download Absensi PDF')
-                ->action(function () {
-                    $records = \App\Models\Absensi::all();
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('tanggal')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('checkin_time'),
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Action::make('Download PDF')
+                    ->label('PDF')
+                    ->icon('heroicon-o-document-download')
+                    ->color('success')
+                    ->action(function ($record) {
+                        $pdf = Pdf::loadView('pdf.barcode', [
+                            'record' => $record,
+                        ]);
 
-                    $pdf = Pdf::loadView('pdf.absensi', [
-                        'records' => $records,
-                    ]);
-
-                    return response()->streamDownload(
-                        fn () => print($pdf->stream()),
-                        'absensi.pdf'
-                    );
-                }),
-        ])
-        ->bulkActions([
-            Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]),
-        ]);
-}
+                        return response()->streamDownload(
+                            fn () => print($pdf->stream()),
+                            'barcode-'.$record->id.'.pdf'
+                        );
+                    }),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
 
     public static function getRelations(): array
     {
