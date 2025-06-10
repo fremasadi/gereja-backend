@@ -51,21 +51,21 @@ class BarcodeResource extends Resource
         ->actions([
             Tables\Actions\EditAction::make(),
             
-            // Action Download Barcode PDF menggunakan API online
+            // Action Download Barcode PDF Individual
             Tables\Actions\Action::make('downloadBarcodePDF')
                 ->label('Download Barcode PDF')
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('success')
                 ->action(function ($record) {
+                    // Generate barcode image
+                    $generator = new DNS1D();
                     $barcodeData = str_pad($record->id, 8, '0', STR_PAD_LEFT);
-                    
-                    // Generate barcode menggunakan API online
-                    $barcodeUrl = "https://barcodeapi.org/api/128/" . $barcodeData;
+                    $barcodeBase64 = $generator->getBarcodePNG($barcodeData, 'C128', 3, 50);
                     
                     // Generate PDF
-                    $pdf = Pdf::loadView('pdf.barcode-simple', [
+                    $pdf = Pdf::loadView('pdf.barcode', [
                         'record' => $record,
-                        'barcodeUrl' => $barcodeUrl,
+                        'barcodeImage' => 'data:image/png;base64,' . $barcodeBase64,
                         'barcodeData' => $barcodeData
                     ]);
                     
@@ -80,24 +80,25 @@ class BarcodeResource extends Resource
             Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
                 
-                // Bulk Action Download
+                // Bulk Action Download Multiple Barcodes PDF
                 Tables\Actions\BulkAction::make('downloadBarcodesPDF')
                     ->label('Download Barcodes PDF')
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('success')
                     ->action(function ($records) {
+                        $generator = new DNS1D();
                         $barcodeData = [];
                         
                         foreach ($records as $record) {
                             $barcodeNumber = str_pad($record->id, 8, '0', STR_PAD_LEFT);
                             $barcodeData[] = [
                                 'record' => $record,
-                                'barcodeUrl' => "https://barcodeapi.org/api/128/" . $barcodeNumber,
+                                'barcodeImage' => 'data:image/png;base64,' . $generator->getBarcodePNG($barcodeNumber, 'C128', 2, 40),
                                 'barcodeData' => $barcodeNumber
                             ];
                         }
                         
-                        $pdf = Pdf::loadView('pdf.barcode-bulk-simple', [
+                        $pdf = Pdf::loadView('pdf.barcode-bulk', [
                             'barcodeData' => $barcodeData,
                             'totalRecords' => count($barcodeData)
                         ]);
