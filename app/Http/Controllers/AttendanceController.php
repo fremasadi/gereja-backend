@@ -28,9 +28,9 @@ class AttendanceController extends Controller
 
     // Gabungkan tanggal & jam dari barcode
     $barcodeDate = Carbon::parse($validated['tanggal']);
-    $checkinTime = Carbon::createFromFormat('Y-m-d H:i', $validated['tanggal'] . ' ' . $validated['checkin_time']);
+    $checkinTime = Carbon::createFromFormat('Y-m-d H:i', $validated['tanggal'] . ' ' . $validated['checkin_time'], 'Asia/Jakarta');
     $minCheckinTime = $checkinTime->copy()->subMinutes(20);
-    $now = now();
+    $now = Carbon::now('Asia/Jakarta');
 
     // Validasi waktu minimal check-in (boleh lebih lambat dari waktu barcode juga)
     if ($now->lt($minCheckinTime)) {
