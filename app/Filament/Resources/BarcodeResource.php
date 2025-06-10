@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
 
 class BarcodeResource extends Resource
 {
@@ -25,7 +26,9 @@ class BarcodeResource extends Resource
             ->schema([
                 Forms\Components\DatePicker::make('tanggal')
                     ->required(),
-                Forms\Components\TextInput::make('checkin_time')
+                TextInput::make('checkin_time')
+                    ->label('Check-in Time')
+                    ->type('time') // agar menjadi time picker
                     ->required(),
             ]);
     }
