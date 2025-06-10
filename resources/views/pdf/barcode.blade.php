@@ -100,7 +100,7 @@
             padding: 20px;
             border-radius: 15px;
             border-left: 4px solid #667eea;
-            text-align: left;
+            text-align: center;
             transition: transform 0.3s ease;
         }
         
@@ -195,7 +195,7 @@
             margin: 25px 0;
             font-size: 12px;
             color: #6c757d;
-            text-align: left;
+            text-align: center;
             line-height: 1.6;
         }
         
@@ -210,6 +210,7 @@
             border-top: 2px solid #f0f0f0;
             font-size: 12px;
             color: #95a5a6;
+            text-align: center;
         }
         
         .footer-item {
@@ -237,11 +238,13 @@
             body {
                 background: white;
                 padding: 0;
+                text-align: center;
             }
             
             .qrcode-container {
                 box-shadow: none;
                 border: 2px solid #333;
+                text-align: center;
             }
         }
     </style>
