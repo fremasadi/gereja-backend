@@ -17,6 +17,7 @@ use Filament\Tables\Actions\Action;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Milon\Barcode\DNS2D;
+use Filament\Forms\Components\TimePicker;
 
 class BarcodeResource extends Resource
 {
@@ -30,9 +31,9 @@ class BarcodeResource extends Resource
             ->schema([
                 Forms\Components\DatePicker::make('tanggal')
                     ->required(),
-                TextInput::make('checkin_time')
+                    TimePicker::make('checkin_time')
                     ->label('Check-in Time')
-                    ->type('time') // agar menjadi time picker
+                    ->seconds(false) // hilangkan detik jika tidak perlu
                     ->required(),
             ]);
     }
