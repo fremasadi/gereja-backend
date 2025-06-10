@@ -52,7 +52,6 @@ class BarcodeResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Action::make('Download PDF')
                     ->label('PDF')
-                    ->icon('heroicon-o-document-download')
                     ->color('success')
                     ->action(function ($record) {
                         $pdf = Pdf::loadView('pdf.barcode', [
