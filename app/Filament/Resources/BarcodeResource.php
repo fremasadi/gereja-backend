@@ -43,6 +43,7 @@ class BarcodeResource extends Resource
     return $table
         ->columns([
             Tables\Columns\TextColumn::make('tanggal')
+            ->label('Date')
                 ->date()
                 ->sortable(),
                 Tables\Columns\TextColumn::make('checkin_time')
