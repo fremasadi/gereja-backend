@@ -13,6 +13,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\Action;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class BarcodeResource extends Resource
 {
@@ -34,34 +37,43 @@ class BarcodeResource extends Resource
     }
 
     public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('tanggal')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('checkin_time'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+{
+    return $table
+        ->columns([
+            Tables\Columns\TextColumn::make('tanggal')
+                ->date()
+                ->sortable(),
+            Tables\Columns\TextColumn::make('checkin_time'),
+        ])
+        ->filters([
+            //
+        ])
+        ->actions([
+            Tables\Actions\EditAction::make(),
+        ])
+        ->headerActions([
+            Action::make('Download PDF')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->label('Download Absensi PDF')
+                ->action(function () {
+                    $records = \App\Models\Absensi::all();
+
+                    $pdf = Pdf::loadView('pdf.absensi', [
+                        'records' => $records,
+                    ]);
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->stream()),
+                        'absensi.pdf'
+                    );
+                }),
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]),
+        ]);
+}
 
     public static function getRelations(): array
     {
