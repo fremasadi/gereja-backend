@@ -72,7 +72,7 @@ class BarcodeResource extends Resource
                     $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
                     
                     // Generate PDF
-                    $pdf = Pdf::loadView('pdf.qrcode', [
+                    $pdf = Pdf::loadView('pdf.barcode', [
                         'record' => $record,
                         'qrCodeImage' => 'data:image/png;base64,' . $qrCodeBase64,
                         'qrData' => $qrData
@@ -113,7 +113,7 @@ class BarcodeResource extends Resource
                             ];
                         }
                         
-                        $pdf = Pdf::loadView('pdf.qrcode-bulk', [
+                        $pdf = Pdf::loadView('pdf.barcode-bulk', [
                             'qrCodeData' => $qrCodeData,
                             'totalRecords' => count($qrCodeData)
                         ]);
