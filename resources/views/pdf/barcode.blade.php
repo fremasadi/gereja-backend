@@ -18,6 +18,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
         }
         
         .qrcode-container {
@@ -250,41 +251,19 @@
         <div class="church-header">
             <div class="church-logo">B</div>
             <div class="church-name">Gereja Bethany</div>
-            <div class="church-subtitle">Sistem Absensi Digital</div>
+            <div class="church-subtitle">Sistem Absensi Ibadah Digital</div>
             <div class="attendance-title">QR Code Check-In</div>
-        </div>
-        
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-label">ID Absensi</div>
-                <div class="info-value">{{ $record->id }}</div>
-            </div>
-            <div class="info-card">
-                <div class="info-label">Tanggal</div>
-                <div class="info-value">{{ $record->tanggal ? $record->tanggal->format('d/m/Y') : '-' }}</div>
-            </div>
         </div>
         
         <div class="qrcode-section">
             <div class="qrcode-image">
                 <img src="{{ $qrCodeImage }}" alt="QR Code Absensi {{ $record->id }}">
             </div>
-            <div class="qrcode-id">
-                #{{ str_pad($record->id, 6, '0', STR_PAD_LEFT) }}
-            </div>
         </div>
         
         <div class="scan-instruction">
             <span class="scan-icon">📱</span>
             Scan untuk Check-In Ibadah
-        </div>
-        
-        <div class="data-preview">
-            <strong>📋 Informasi QR Code:</strong><br>
-            🆔 ID: {{ $record->id }}<br>
-            📅 Tanggal: {{ $record->tanggal ? $record->tanggal->format('Y-m-d') : 'Belum ditentukan' }}<br>
-            ⏰ Check-in: {{ $record->checkin_time ?? 'Belum check-in' }}<br>
-            🏷️ Tipe: Absensi Ibadah
         </div>
         
         <div class="footer">
@@ -294,7 +273,6 @@
             <div class="footer-item">
                 Sistem Absensi Digital Gereja Bethany
             </div>
-            <div class="security-badge">Secure QR Code</div>
         </div>
     </div>
 </body>
