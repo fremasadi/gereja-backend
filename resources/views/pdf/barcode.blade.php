@@ -2,174 +2,299 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>QR Code - {{ $record->id }}</title>
+    <title>QR Code Absensi - {{ $record->id }}</title>
     <style>
         @page {
-            margin: 15mm;
+            margin: 10mm;
             size: A4;
         }
         
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            text-align: center;
-            line-height: 1.4;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .qrcode-container {
-            border: 3px solid #000;
-            padding: 30px;
-            margin: 20px auto;
-            width: 350px;
             background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 450px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
         
-        .header {
-            margin-bottom: 25px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
+        .qrcode-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #4CAF50, #2196F3, #FF9800, #E91E63);
         }
         
-        .header h2 {
-            margin: 0;
+        .church-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+        
+        .church-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-size: 24px;
-            color: #333;
             font-weight: bold;
         }
         
-        .info-section {
-            background: #f8f9fa;
-            padding: 20px;
-            margin: 20px 0;
-            border: 1px solid #ddd;
-            text-align: left;
+        .church-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            font-size: 14px;
+        .church-subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        
+        .attendance-title {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+            text-align: left;
+            transition: transform 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-2px);
         }
         
         .info-label {
-            font-weight: bold;
-            color: #333;
-            width: 40%;
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
         }
         
         .info-value {
-            color: #666;
-            width: 55%;
-            text-align: right;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
         }
         
         .qrcode-section {
-            margin: 30px 0;
-            padding: 20px;
-            background: white;
-            border: 2px solid #333;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            position: relative;
+        }
+        
+        .qrcode-section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+            border-radius: 22px;
+            z-index: -1;
         }
         
         .qrcode-image {
-            margin: 15px 0;
-            padding: 20px;
             background: white;
-            border: 1px solid #ddd;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
         
         .qrcode-image img {
-            width: 200px;
-            height: 200px;
+            width: 250px;
+            height: 250px;
             max-width: 100%;
+            border-radius: 10px;
         }
         
         .qrcode-id {
             font-family: 'Courier New', monospace;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: bold;
-            color: #000;
-            margin-top: 15px;
-            letter-spacing: 2px;
-            border: 1px solid #ccc;
-            padding: 8px;
-            background: #f0f0f0;
+            color: #2c3e50;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            letter-spacing: 3px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .scan-instruction {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 25px 0;
+            display: inline-block;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .scan-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        
+        .data-preview {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+            font-size: 12px;
+            color: #6c757d;
+            text-align: left;
+            line-height: 1.6;
+        }
+        
+        .data-preview strong {
+            color: #495057;
+            font-size: 14px;
         }
         
         .footer {
             margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #ccc;
-            font-size: 11px;
-            color: #666;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+            font-size: 12px;
+            color: #95a5a6;
         }
         
-        .scan-instruction {
-            margin-top: 20px;
-            font-size: 13px;
-            color: #007bff;
-            font-weight: bold;
+        .footer-item {
+            margin: 5px 0;
         }
         
-        .data-preview {
-            margin-top: 15px;
+        .timestamp {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .security-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
             font-size: 10px;
-            color: #888;
-            font-style: italic;
-            background: #f9f9f9;
-            padding: 10px;
-            border: 1px solid #eee;
-            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .qrcode-container {
+                box-shadow: none;
+                border: 2px solid #333;
+            }
         }
     </style>
 </head>
 <body>
     <div class="qrcode-container">
-        <div class="header">
-            <h2>QR CODE LABEL</h2>
+        <div class="church-header">
+            <div class="church-logo">B</div>
+            <div class="church-name">Gereja Bethany</div>
+            <div class="church-subtitle">Sistem Absensi Digital</div>
+            <div class="attendance-title">QR Code Check-In</div>
         </div>
         
-        <div class="info-section">
-            <div class="info-row">
-                <span class="info-label">ID:</span>
-                <span class="info-value">{{ $record->id }}</span>
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">ID Absensi</div>
+                <div class="info-value">{{ $record->id }}</div>
             </div>
-            <div class="info-row">
-                <span class="info-label">Tanggal:</span>
-                <span class="info-value">{{ $record->tanggal ? $record->tanggal->format('d/m/Y') : '-' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Check-in:</span>
-                <span class="info-value">{{ $record->checkin_time ?? '-' }}</span>
+            <div class="info-card">
+                <div class="info-label">Tanggal</div>
+                <div class="info-value">{{ $record->tanggal ? $record->tanggal->format('d/m/Y') : '-' }}</div>
             </div>
         </div>
         
         <div class="qrcode-section">
             <div class="qrcode-image">
-                <img src="{{ $qrCodeImage }}" alt="QR Code {{ $record->id }}">
+                <img src="{{ $qrCodeImage }}" alt="QR Code Absensi {{ $record->id }}">
             </div>
             <div class="qrcode-id">
-                ID: {{ str_pad($record->id, 6, '0', STR_PAD_LEFT) }}
+                #{{ str_pad($record->id, 6, '0', STR_PAD_LEFT) }}
             </div>
         </div>
         
         <div class="scan-instruction">
-            📱 Scan QR Code untuk mendapatkan data lengkap
+            <span class="scan-icon">📱</span>
+            Scan untuk Check-In Ibadah
         </div>
         
         <div class="data-preview">
-            <strong>Data dalam QR Code:</strong><br>
-            ID: {{ $record->id }}<br>
-            Tanggal: {{ $record->tanggal ? $record->tanggal->format('Y-m-d') : 'null' }}<br>
-            Check-in: {{ $record->checkin_time ?? 'null' }}<br>
-            Type: attendance_record
+            <strong>📋 Informasi QR Code:</strong><br>
+            🆔 ID: {{ $record->id }}<br>
+            📅 Tanggal: {{ $record->tanggal ? $record->tanggal->format('Y-m-d') : 'Belum ditentukan' }}<br>
+            ⏰ Check-in: {{ $record->checkin_time ?? 'Belum check-in' }}<br>
+            🏷️ Tipe: Absensi Ibadah
         </div>
         
         <div class="footer">
-            <p>Generated: {{ now()->format('d/m/Y H:i:s') }}</p>
-            <p>System Generated QR Code - Contains Full Data</p>
+            <div class="footer-item">
+                <span class="timestamp">Generated: {{ now()->format('d/m/Y H:i:s') }}</span>
+            </div>
+            <div class="footer-item">
+                Sistem Absensi Digital Gereja Bethany
+            </div>
+            <div class="security-badge">Secure QR Code</div>
         </div>
     </div>
 </body>
