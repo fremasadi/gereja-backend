@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\InfaqController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\MarriageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AttendanceController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/infaq', [InfaqController::class, 'create']);
     Route::get('/user/profile', [UserController::class, 'profile']);
 
+    Route::post('/attendance/scan', [AttendanceController::class, 'scanBarcode']);
 
 });
 
