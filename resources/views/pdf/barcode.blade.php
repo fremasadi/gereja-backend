@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Barcode - {{ $record->id }}</title>
+    <title>QR Code - {{ $record->id }}</title>
     <style>
         @page {
             margin: 15mm;
@@ -17,7 +17,7 @@
             line-height: 1.4;
         }
         
-        .barcode-container {
+        .qrcode-container {
             border: 3px solid #000;
             padding: 30px;
             margin: 20px auto;
@@ -66,29 +66,33 @@
             text-align: right;
         }
         
-        .barcode-section {
+        .qrcode-section {
             margin: 30px 0;
             padding: 20px;
             background: white;
             border: 2px solid #333;
         }
         
-        .barcode-image {
+        .qrcode-image {
             margin: 15px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
         }
         
-        .barcode-image img {
+        .qrcode-image img {
+            width: 200px;
+            height: 200px;
             max-width: 100%;
-            height: auto;
         }
         
-        .barcode-number {
+        .qrcode-id {
             font-family: 'Courier New', monospace;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #000;
-            margin-top: 10px;
-            letter-spacing: 3px;
+            margin-top: 15px;
+            letter-spacing: 2px;
             border: 1px solid #ccc;
             padding: 8px;
             background: #f0f0f0;
@@ -104,16 +108,27 @@
         
         .scan-instruction {
             margin-top: 20px;
-            font-size: 12px;
+            font-size: 13px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .data-preview {
+            margin-top: 15px;
+            font-size: 10px;
             color: #888;
             font-style: italic;
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #eee;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <div class="barcode-container">
+    <div class="qrcode-container">
         <div class="header">
-            <h2>BARCODE LABEL</h2>
+            <h2>QR CODE LABEL</h2>
         </div>
         
         <div class="info-section">
@@ -131,22 +146,30 @@
             </div>
         </div>
         
-        <div class="barcode-section">
-            <div class="barcode-image">
-                <img src="{{ $barcodeImage }}" alt="Barcode {{ $barcodeData }}">
+        <div class="qrcode-section">
+            <div class="qrcode-image">
+                <img src="{{ $qrCodeImage }}" alt="QR Code {{ $record->id }}">
             </div>
-            <div class="barcode-number">
-                {{ $barcodeData }}
+            <div class="qrcode-id">
+                ID: {{ str_pad($record->id, 6, '0', STR_PAD_LEFT) }}
             </div>
         </div>
         
         <div class="scan-instruction">
-            Scan barcode di atas untuk verifikasi data
+            📱 Scan QR Code untuk mendapatkan data lengkap
+        </div>
+        
+        <div class="data-preview">
+            <strong>Data dalam QR Code:</strong><br>
+            ID: {{ $record->id }}<br>
+            Tanggal: {{ $record->tanggal ? $record->tanggal->format('Y-m-d') : 'null' }}<br>
+            Check-in: {{ $record->checkin_time ?? 'null' }}<br>
+            Type: attendance_record
         </div>
         
         <div class="footer">
             <p>Generated: {{ now()->format('d/m/Y H:i:s') }}</p>
-            <p>System Generated Barcode - Do Not Duplicate</p>
+            <p>System Generated QR Code - Contains Full Data</p>
         </div>
     </div>
 </body>

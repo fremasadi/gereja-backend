@@ -52,27 +52,35 @@ class BarcodeResource extends Resource
         ->actions([
             Tables\Actions\EditAction::make(),
             
-            // Action Download Barcode PDF Individual
-            Tables\Actions\Action::make('downloadBarcodePDF')
-                ->label('Download Barcode PDF')
-                ->icon('heroicon-o-document-arrow-down')
+            // Action Download QR Code PDF Individual
+            Tables\Actions\Action::make('downloadQRCodePDF')
+                ->label('Download QR Code PDF')
+                ->icon('heroicon-o-qr-code')
                 ->color('success')
                 ->action(function ($record) {
-                    // Generate barcode image
-                    $generator = new DNS1D();
-                    $barcodeData = str_pad($record->id, 8, '0', STR_PAD_LEFT);
-                    $barcodeBase64 = $generator->getBarcodePNG($barcodeData, 'C128', 3, 50);
+                    // Generate QR Code dengan data lengkap
+                    $generator = new DNS2D();
+                    
+                    // Data yang akan disimpan dalam QR Code
+                    $qrData = json_encode([
+                        'id' => $record->id,
+                        'tanggal' => $record->tanggal ? $record->tanggal->format('Y-m-d') : null,
+                        'checkin_time' => $record->checkin_time,
+                        'type' => 'attendance_record'
+                    ]);
+                    
+                    $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
                     
                     // Generate PDF
-                    $pdf = Pdf::loadView('pdf.barcode', [
+                    $pdf = Pdf::loadView('pdf.qrcode', [
                         'record' => $record,
-                        'barcodeImage' => 'data:image/png;base64,' . $barcodeBase64,
-                        'barcodeData' => $barcodeData
+                        'qrCodeImage' => 'data:image/png;base64,' . $qrCodeBase64,
+                        'qrData' => $qrData
                     ]);
                     
                     return response()->streamDownload(function () use ($pdf) {
                         echo $pdf->output();
-                    }, 'barcode-' . $record->id . '.pdf', [
+                    }, 'qrcode-' . $record->id . '.pdf', [
                         'Content-Type' => 'application/pdf',
                     ]);
                 }),
@@ -81,32 +89,38 @@ class BarcodeResource extends Resource
             Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
                 
-                // Bulk Action Download Multiple Barcodes PDF
-                Tables\Actions\BulkAction::make('downloadBarcodesPDF')
-                    ->label('Download Barcodes PDF')
-                    ->icon('heroicon-o-document-arrow-down')
+                // Bulk Action Download Multiple QR Codes PDF
+                Tables\Actions\BulkAction::make('downloadQRCodesPDF')
+                    ->label('Download QR Codes PDF')
+                    ->icon('heroicon-o-qr-code')
                     ->color('success')
                     ->action(function ($records) {
-                        $generator = new DNS1D();
-                        $barcodeData = [];
+                        $generator = new DNS2D();
+                        $qrCodeData = [];
                         
                         foreach ($records as $record) {
-                            $barcodeNumber = str_pad($record->id, 8, '0', STR_PAD_LEFT);
-                            $barcodeData[] = [
+                            $qrData = json_encode([
+                                'id' => $record->id,
+                                'tanggal' => $record->tanggal ? $record->tanggal->format('Y-m-d') : null,
+                                'checkin_time' => $record->checkin_time,
+                                'type' => 'attendance_record'
+                            ]);
+                            
+                            $qrCodeData[] = [
                                 'record' => $record,
-                                'barcodeImage' => 'data:image/png;base64,' . $generator->getBarcodePNG($barcodeNumber, 'C128', 2, 40),
-                                'barcodeData' => $barcodeNumber
+                                'qrCodeImage' => 'data:image/png;base64,' . $generator->getBarcodePNG($qrData, 'QRCODE', 6, 6),
+                                'qrData' => $qrData
                             ];
                         }
                         
-                        $pdf = Pdf::loadView('pdf.barcode-bulk', [
-                            'barcodeData' => $barcodeData,
-                            'totalRecords' => count($barcodeData)
+                        $pdf = Pdf::loadView('pdf.qrcode-bulk', [
+                            'qrCodeData' => $qrCodeData,
+                            'totalRecords' => count($qrCodeData)
                         ]);
                         
                         return response()->streamDownload(function () use ($pdf) {
                             echo $pdf->output();
-                        }, 'barcodes-' . now()->format('Y-m-d-H-i-s') . '.pdf', [
+                        }, 'qrcodes-' . now()->format('Y-m-d-H-i-s') . '.pdf', [
                             'Content-Type' => 'application/pdf',
                         ]);
                     })

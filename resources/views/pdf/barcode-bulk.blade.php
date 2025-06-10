@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Bulk Barcodes PDF</title>
+    <title>Bulk QR Codes PDF</title>
     <style>
         @page {
             margin: 10mm;
@@ -34,14 +34,14 @@
             color: #666;
         }
         
-        .barcode-grid {
+        .qrcode-grid {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             gap: 15px;
         }
         
-        .barcode-item {
+        .qrcode-item {
             width: 48%;
             border: 2px solid #333;
             padding: 15px;
@@ -80,25 +80,33 @@
             width: 60px;
         }
         
-        .barcode-image {
+        .qrcode-image {
             margin: 12px 0;
             text-align: center;
         }
         
-        .barcode-image img {
-            max-width: 100%;
-            height: auto;
+        .qrcode-image img {
+            width: 120px;
+            height: 120px;
+            border: 1px solid #ddd;
         }
         
-        .barcode-number {
+        .qrcode-id {
             font-family: 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             background: #f8f9fa;
             padding: 5px;
             border: 1px solid #ddd;
             letter-spacing: 1px;
             margin-top: 8px;
+        }
+        
+        .scan-note {
+            font-size: 9px;
+            color: #007bff;
+            margin-top: 8px;
+            font-style: italic;
         }
         
         .footer {
@@ -112,13 +120,13 @@
         }
         
         /* Untuk tampilan 2 kolom yang rapi */
-        .barcode-item:nth-child(odd) {
+        .qrcode-item:nth-child(odd) {
             clear: left;
         }
         
         /* Print specific styles */
         @media print {
-            .barcode-item {
+            .qrcode-item {
                 width: 48%;
                 margin-bottom: 10px;
             }
@@ -127,14 +135,14 @@
 </head>
 <body>
     <div class="page-header">
-        <h2>BULK BARCODE EXPORT</h2>
+        <h2>📱 BULK QR CODE EXPORT</h2>
         <p>Generated: {{ now()->format('d/m/Y H:i:s') }}</p>
         <p>Total Records: {{ $totalRecords }}</p>
     </div>
     
-    <div class="barcode-grid">
-        @foreach($barcodeData as $item)
-        <div class="barcode-item">
+    <div class="qrcode-grid">
+        @foreach($qrCodeData as $item)
+        <div class="qrcode-item">
             <div class="item-header">
                 <h4>Record #{{ $item['record']->id }}</h4>
             </div>
@@ -145,20 +153,25 @@
                 <p><strong>Check-in:</strong> {{ $item['record']->checkin_time ?? '-' }}</p>
             </div>
             
-            <div class="barcode-image">
-                <img src="{{ $item['barcodeImage'] }}" alt="Barcode {{ $item['barcodeData'] }}">
+            <div class="qrcode-image">
+                <img src="{{ $item['qrCodeImage'] }}" alt="QR Code {{ $item['record']->id }}">
             </div>
             
-            <div class="barcode-number">
-                {{ $item['barcodeData'] }}
+            <div class="qrcode-id">
+                ID: {{ str_pad($item['record']->id, 6, '0', STR_PAD_LEFT) }}
+            </div>
+            
+            <div class="scan-note">
+                Scan untuk data lengkap
             </div>
         </div>
         @endforeach
     </div>
     
     <div class="footer">
-        <p>System Generated Barcodes - {{ now()->format('d/m/Y H:i:s') }}</p>
-        <p>Total Items: {{ $totalRecords }} | Page 1</p>
+        <p>📱 System Generated QR Codes - {{ now()->format('d/m/Y H:i:s') }}</p>
+        <p>Each QR Code contains: ID, Tanggal, Check-in Time, and Type</p>
+        <p>Total Items: {{ $totalRecords }} | Scannable with any QR Code reader</p>
     </div>
 </body>
 </html>
