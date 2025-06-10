@@ -236,15 +236,27 @@
         
         @media print {
             body {
-                background: white;
-                padding: 0;
-                text-align: center;
+                background: white !important;
+                padding: 20px !important;
+                margin: 0 !important;
+                text-align: center !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                min-height: 100vh !important;
             }
             
             .qrcode-container {
-                box-shadow: none;
-                border: 2px solid #333;
-                text-align: center;
+                box-shadow: none !important;
+                border: 2px solid #333 !important;
+                text-align: center !important;
+                margin: 0 auto !important;
+                width: 450px !important;
+                max-width: 90% !important;
+            }
+            
+            * {
+                text-align: center !important;
             }
         }
     </style>
