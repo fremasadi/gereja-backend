@@ -37,4 +37,6 @@ class Attendance extends Model
     {
         return !is_null($this->check_out_at);
     }
+
+    
 }

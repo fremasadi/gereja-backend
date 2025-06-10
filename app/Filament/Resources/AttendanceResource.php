@@ -39,9 +39,11 @@ class AttendanceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Name Jemaat')
+                    ->sortable()
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('attendance_date')
                     ->date()
                     ->sortable(),
