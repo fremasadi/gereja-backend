@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\Barcode;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -13,46 +13,48 @@ class AttendanceController extends Controller
     public function scanBarcode(Request $request)
     {
         $user = Auth::user();
-        $data = $request->validate([
+
+        $validated = $request->validate([
             'name' => 'required|string',
             'tanggal' => 'required|date',
             'checkin_time' => 'required'
         ]);
 
-        // Cari barcode yang sesuai
-        $barcode = Barcode::where('name', $data['name'])
-            ->where('tanggal', $data['tanggal'])
-            ->where('checkin_time', $data['checkin_time'])
+        // Validasi barcode
+        $barcode = Barcode::where('name', $validated['name'])
+            ->where('tanggal', $validated['tanggal'])
+            ->where('checkin_time', $validated['checkin_time'])
             ->first();
 
         if (!$barcode) {
             return response()->json([
                 'status' => false,
-                'message' => 'Barcode tidak valid atau tidak ditemukan'
+                'message' => 'Barcode tidak valid',
             ], 404);
         }
 
-        // Validasi waktu saat ini
-        $now = Carbon::now();
-        $checkinAllowedAt = Carbon::parse($data['tanggal'] . ' ' . $data['checkin_time'])->subMinutes(20);
+        // Validasi waktu boleh scan
+        $allowedCheckinTime = Carbon::parse("{$validated['tanggal']} {$validated['checkin_time']}")
+            ->subMinutes(20);
 
-        if ($now->lt($checkinAllowedAt)) {
+        if (now()->lt($allowedCheckinTime)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Belum bisa check-in, maksimal 20 menit sebelum waktu checkin'
+                'message' => 'Belum boleh melakukan check-in. Maksimal 20 menit sebelum waktu check-in.'
             ], 403);
         }
 
+        // Cek apakah sudah ada absensi
         $attendance = Attendance::where('user_id', $user->id)
-            ->whereDate('tanggal', $data['tanggal'])
+            ->whereDate('attendance_date', $validated['tanggal'])
             ->first();
 
         if (!$attendance) {
-            // Check-in
+            // Belum ada → lakukan check-in
             $attendance = Attendance::create([
                 'user_id' => $user->id,
-                'tanggal' => $data['tanggal'],
-                'checkin_time' => now()->format('H:i:s'),
+                'attendance_date' => $validated['tanggal'],
+                'check_in_at' => now(),
             ]);
 
             return response()->json([
@@ -63,9 +65,10 @@ class AttendanceController extends Controller
             ]);
         }
 
-        if (!$attendance->checkout_time) {
+        if (is_null($attendance->check_out_at)) {
+            // Sudah check-in, belum check-out → lakukan check-out
             $attendance->update([
-                'checkout_time' => now()->format('H:i:s')
+                'check_out_at' => now(),
             ]);
 
             return response()->json([
@@ -76,9 +79,10 @@ class AttendanceController extends Controller
             ]);
         }
 
+        // Sudah check-in dan check-out
         return response()->json([
             'status' => false,
-            'message' => 'Sudah melakukan check-in dan check-out hari ini',
-        ]);
+            'message' => 'Anda sudah melakukan check-in dan check-out untuk tanggal ini.'
+        ], 400);
     }
 }

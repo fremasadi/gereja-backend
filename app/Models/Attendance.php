@@ -19,8 +19,8 @@ class Attendance extends Model
 
     protected $casts = [
         'attendance_date' => 'date',
-        'check_in_at' => 'datetime',
-        'check_out_at' => 'datetime',
+        'check_in_at' => 'time',
+        'check_out_at' => 'time',
     ];
 
     public function user()
