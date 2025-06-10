@@ -45,8 +45,10 @@ class BarcodeResource extends Resource
             Tables\Columns\TextColumn::make('tanggal')
                 ->date()
                 ->sortable(),
-            Tables\Columns\TextColumn::make('checkin_time'),
-        ])
+                Tables\Columns\TextColumn::make('checkin_time')
+                ->label('Check-in Time')
+                ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('H:i')),
+                    ])
         ->filters([
             //
         ])
