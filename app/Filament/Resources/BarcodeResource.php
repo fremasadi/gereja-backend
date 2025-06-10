@@ -66,7 +66,6 @@ class BarcodeResource extends Resource
                     
                     // Data yang akan disimpan dalam QR Code
                     $qrData = json_encode([
-                        'id' => $record->id,
                         'tanggal' => $record->tanggal ? $record->tanggal->format('Y-m-d') : null,
                         'checkin_time' => \Carbon\Carbon::parse($record->checkin_time)->format('H:i'),
                     ]);
