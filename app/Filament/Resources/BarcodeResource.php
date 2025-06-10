@@ -69,7 +69,6 @@ class BarcodeResource extends Resource
                         'id' => $record->id,
                         'tanggal' => $record->tanggal ? $record->tanggal->format('Y-m-d') : null,
                         'checkin_time' => $record->checkin_time,
-                        'type' => 'attendance_record'
                     ]);
                     
                     $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
@@ -92,42 +91,42 @@ class BarcodeResource extends Resource
             Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
                 
-                // Bulk Action Download Multiple QR Codes PDF
-                Tables\Actions\BulkAction::make('downloadQRCodesPDF')
-                    ->label('Download QR Codes PDF')
-                    ->icon('heroicon-o-qr-code')
-                    ->color('success')
-                    ->action(function ($records) {
-                        $generator = new DNS2D();
-                        $qrCodeData = [];
+                // // Bulk Action Download Multiple QR Codes PDF
+                // Tables\Actions\BulkAction::make('downloadQRCodesPDF')
+                //     ->label('Download QR Codes PDF')
+                //     ->icon('heroicon-o-qr-code')
+                //     ->color('success')
+                //     ->action(function ($records) {
+                //         $generator = new DNS2D();
+                //         $qrCodeData = [];
                         
-                        foreach ($records as $record) {
-                            $qrData = json_encode([
-                                'id' => $record->id,
-                                'tanggal' => $record->tanggal ? $record->tanggal->format('Y-m-d') : null,
-                                'checkin_time' => $record->checkin_time,
-                                'type' => 'attendance_record'
-                            ]);
+                //         foreach ($records as $record) {
+                //             $qrData = json_encode([
+                //                 'id' => $record->id,
+                //                 'tanggal' => $record->tanggal ? $record->tanggal->format('Y-m-d') : null,
+                //                 'checkin_time' => $record->checkin_time,
+                //                 'type' => 'attendance_record'
+                //             ]);
                             
-                            $qrCodeData[] = [
-                                'record' => $record,
-                                'qrCodeImage' => 'data:image/png;base64,' . $generator->getBarcodePNG($qrData, 'QRCODE', 6, 6),
-                                'qrData' => $qrData
-                            ];
-                        }
+                //             $qrCodeData[] = [
+                //                 'record' => $record,
+                //                 'qrCodeImage' => 'data:image/png;base64,' . $generator->getBarcodePNG($qrData, 'QRCODE', 6, 6),
+                //                 'qrData' => $qrData
+                //             ];
+                //         }
                         
-                        $pdf = Pdf::loadView('pdf.barcode-bulk', [
-                            'qrCodeData' => $qrCodeData,
-                            'totalRecords' => count($qrCodeData)
-                        ]);
+                //         $pdf = Pdf::loadView('pdf.barcode-bulk', [
+                //             'qrCodeData' => $qrCodeData,
+                //             'totalRecords' => count($qrCodeData)
+                //         ]);
                         
-                        return response()->streamDownload(function () use ($pdf) {
-                            echo $pdf->output();
-                        }, 'qrcodes-' . now()->format('Y-m-d-H-i-s') . '.pdf', [
-                            'Content-Type' => 'application/pdf',
-                        ]);
-                    })
-                    ->deselectRecordsAfterCompletion(),
+                //         return response()->streamDownload(function () use ($pdf) {
+                //             echo $pdf->output();
+                //         }, 'qrcodes-' . now()->format('Y-m-d-H-i-s') . '.pdf', [
+                //             'Content-Type' => 'application/pdf',
+                //         ]);
+                //     })
+                //     ->deselectRecordsAfterCompletion(),
             ]),
         ]);
 }
