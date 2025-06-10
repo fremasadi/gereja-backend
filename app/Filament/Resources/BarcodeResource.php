@@ -16,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\Action;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Milon\Barcode\DNS1D;
 
 class BarcodeResource extends Resource
 {
