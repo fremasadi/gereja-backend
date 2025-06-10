@@ -18,6 +18,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Milon\Barcode\DNS2D;
 use Filament\Forms\Components\TimePicker;
+use Carbon\Carbon;
 
 class BarcodeResource extends Resource
 {
@@ -45,8 +46,9 @@ class BarcodeResource extends Resource
             Tables\Columns\TextColumn::make('tanggal')
                 ->date()
                 ->sortable(),
-            Tables\Columns\TextColumn::make('checkin_time'),
-        ])
+                Tables\Columns\TextColumn::make('checkin_time')
+                ->label('Check-in Time')
+                ->formatStateUsing(fn ($state) => Carbon::createFromFormat('H:i:s', $state)->format('H:i')),        ])
         ->filters([
             //
         ])
