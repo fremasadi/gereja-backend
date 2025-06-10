@@ -51,16 +51,28 @@ class BarcodeResource extends Resource
         ->actions([
             Tables\Actions\EditAction::make(),
             
-            // Action Download Barcode Individual
-            Tables\Actions\Action::make('downloadBarcode')
-                ->label('Download Barcode')
-                ->icon('heroicon-o-qr-code')
+            // Action Download Barcode PDF menggunakan API online
+            Tables\Actions\Action::make('downloadBarcodePDF')
+                ->label('Download Barcode PDF')
+                ->icon('heroicon-o-document-arrow-down')
                 ->color('success')
                 ->action(function ($record) {
-                    return response()->streamDownload(function () use ($record) {
-                        echo view('pdf.barcode', compact('record'))->render();
-                    }, 'barcode-' . $record->id . '.html', [
-                        'Content-Type' => 'text/html',
+                    $barcodeData = str_pad($record->id, 8, '0', STR_PAD_LEFT);
+                    
+                    // Generate barcode menggunakan API online
+                    $barcodeUrl = "https://barcodeapi.org/api/128/" . $barcodeData;
+                    
+                    // Generate PDF
+                    $pdf = Pdf::loadView('pdf.barcode-simple', [
+                        'record' => $record,
+                        'barcodeUrl' => $barcodeUrl,
+                        'barcodeData' => $barcodeData
+                    ]);
+                    
+                    return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->output();
+                    }, 'barcode-' . $record->id . '.pdf', [
+                        'Content-Type' => 'application/pdf',
                     ]);
                 }),
         ])
@@ -68,16 +80,32 @@ class BarcodeResource extends Resource
             Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
                 
-                // Bulk Action Download Multiple Barcodes
-                Tables\Actions\BulkAction::make('downloadBarcodes')
-                    ->label('Download Barcodes')
-                    ->icon('heroicon-o-qr-code')
+                // Bulk Action Download
+                Tables\Actions\BulkAction::make('downloadBarcodesPDF')
+                    ->label('Download Barcodes PDF')
+                    ->icon('heroicon-o-document-arrow-down')
                     ->color('success')
                     ->action(function ($records) {
-                        return response()->streamDownload(function () use ($records) {
-                            echo view('pdf.barcode-bulk', compact('records'))->render();
-                        }, 'barcodes-' . now()->format('Y-m-d-H-i-s') . '.html', [
-                            'Content-Type' => 'text/html',
+                        $barcodeData = [];
+                        
+                        foreach ($records as $record) {
+                            $barcodeNumber = str_pad($record->id, 8, '0', STR_PAD_LEFT);
+                            $barcodeData[] = [
+                                'record' => $record,
+                                'barcodeUrl' => "https://barcodeapi.org/api/128/" . $barcodeNumber,
+                                'barcodeData' => $barcodeNumber
+                            ];
+                        }
+                        
+                        $pdf = Pdf::loadView('pdf.barcode-bulk-simple', [
+                            'barcodeData' => $barcodeData,
+                            'totalRecords' => count($barcodeData)
+                        ]);
+                        
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->output();
+                        }, 'barcodes-' . now()->format('Y-m-d-H-i-s') . '.pdf', [
+                            'Content-Type' => 'application/pdf',
                         ]);
                     })
                     ->deselectRecordsAfterCompletion(),
