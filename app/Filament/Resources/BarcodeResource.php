@@ -68,7 +68,7 @@ class BarcodeResource extends Resource
                     $qrData = json_encode([
                         'id' => $record->id,
                         'tanggal' => $record->tanggal ? $record->tanggal->format('Y-m-d') : null,
-                        'checkin_time' => $record->checkin_time,
+                        'checkin_time' => \Carbon\Carbon::parse($record->checkin_time)->format('H:i'),
                     ]);
                     
                     $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
