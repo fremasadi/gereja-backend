@@ -142,128 +142,120 @@ class InfaqController extends Controller
     }
 
     private function processPayment($paymentType, $totalAmount, $orderId, $bank = null, $user)
-{
-    // Log untuk debugging
-    Log::info('Midtrans Config Check', [
-        'server_key_exists' => !empty(env('MIDTRANS_SERVER_KEY')),
-        'server_key_length' => strlen(env('MIDTRANS_SERVER_KEY')),
-        'is_production' => env('MIDTRANS_ENV') === 'production'
-    ]);
+    {
+        // Log untuk debugging
+        Log::info('Midtrans Config Check', [
+            'server_key_exists' => !empty(env('MIDTRANS_SERVER_KEY')),
+            'server_key_length' => strlen(env('MIDTRANS_SERVER_KEY')),
+            'is_production' => env('MIDTRANS_ENV') === 'production'
+        ]);
 
-    $transaction_details = [
-        'order_id' => $orderId,
-        'gross_amount' => $totalAmount,
-    ];
-
-    $item_details = [
-        [
-            'id' => 'infaq-1',
-            'price' => $totalAmount,
-            'quantity' => 1,
-            'name' => 'Infaq #' . $orderId,
-        ]
-    ];
-
-    $customer_details = [
-        'first_name' => $user->name,
-        'email' => $user->email,
-        'phone' => $user->phone ?? 'N/A',
-    ];
-
-    // Add custom expiry
-    $custom_expiry = [
-        'expiry_duration' => 1, // Duration in hours
-        'unit' => 'hour', // Units can be 'minute', 'hour', or 'day'
-    ];
-
-    // Base transaction data
-    $transaction_data = [
-        'transaction_details' => $transaction_details,
-        'item_details' => $item_details,
-        'customer_details' => $customer_details,
-        'custom_expiry' => $custom_expiry,
-    ];
-
-    // Set payment method based on type
-    switch ($paymentType) {
-        case 'BANK_TRANSFER':
-            $transaction_data['payment_type'] = 'bank_transfer';
-            $transaction_data['bank_transfer'] = [
-                'bank' => strtolower($bank)
-            ];
-            break;
-            
-        case 'QRIS':
-            $transaction_data['payment_type'] = 'qris';
-            break;
-            
-        case 'GOPAY':
-            $transaction_data['payment_type'] = 'gopay';
-            break;
-            
-        default:
-            $transaction_data['payment_type'] = 'bank_transfer';
-            break;
-    }
-
-    try {
-        $response = CoreApi::charge($transaction_data);
-
-        $result = [
-            'response' => $response,
-            'va_bank' => null,
-            'va_number' => null,
-            'redirect_url' => null,
-            'qr_string' => null,
-            'deeplink_redirect' => null
+        $transaction_details = [
+            'order_id' => $orderId,
+            'gross_amount' => $totalAmount,
         ];
 
-        // Handle different payment types response
-        if ($response->payment_type === 'bank_transfer') {
-            if (isset($response->va_numbers) && !empty($response->va_numbers)) {
-                $result['va_bank'] = $response->va_numbers[0]->bank;
-                $result['va_number'] = $response->va_numbers[0]->va_number;
-            } elseif (isset($response->permata_va_number)) {
-                $result['va_bank'] = 'permata';
-                $result['va_number'] = $response->permata_va_number;
-            }
-        } elseif ($response->payment_type === 'qris') {
-            // Handle QRIS response
-            if (isset($response->actions)) {
-                foreach ($response->actions as $action) {
-                    if ($action->name === 'generate-qr-code') {
-                        $result['qr_string'] = $action->url;
-                        break;
-                    }
-                }
-            }
-        } elseif ($response->payment_type === 'gopay') {
-            // Handle GoPay response - IMPROVED PARSING
-            if (isset($response->actions)) {
-                foreach ($response->actions as $action) {
-                    if ($action->name === 'generate-qr-code') {
-                        $result['qr_string'] = $action->url;
-                    } elseif ($action->name === 'deeplink-redirect') {
-                        $result['deeplink_redirect'] = $action->url;
-                    }
-                }
-            }
-            
-            // Log untuk debugging GoPay response
-            Log::info('GoPay Response Details', [
-                'order_id' => $orderId,
-                'actions' => $response->actions ?? 'No actions found',
-                'qr_string' => $result['qr_string'],
-                'deeplink_redirect' => $result['deeplink_redirect']
-            ]);
+        $item_details = [
+            [
+                'id' => 'infaq-1',
+                'price' => $totalAmount,
+                'quantity' => 1,
+                'name' => 'Infaq #' . $orderId,
+            ]
+        ];
+
+        $customer_details = [
+            'first_name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone ?? 'N/A',
+        ];
+
+        // Add custom expiry
+        $custom_expiry = [
+            'expiry_duration' => 1, // Duration in hours
+            'unit' => 'hour', // Units can be 'minute', 'hour', or 'day'
+        ];
+
+        // Base transaction data
+        $transaction_data = [
+            'transaction_details' => $transaction_details,
+            'item_details' => $item_details,
+            'customer_details' => $customer_details,
+            'custom_expiry' => $custom_expiry,
+        ];
+
+        // Set payment method based on type
+        switch ($paymentType) {
+            case 'BANK_TRANSFER':
+                $transaction_data['payment_type'] = 'bank_transfer';
+                $transaction_data['bank_transfer'] = [
+                    'bank' => strtolower($bank)
+                ];
+                break;
+                
+            case 'QRIS':
+                $transaction_data['payment_type'] = 'qris';
+                break;
+                
+            case 'GOPAY':
+                $transaction_data['payment_type'] = 'gopay';
+                break;
+                
+            default:
+                $transaction_data['payment_type'] = 'bank_transfer';
+                break;
         }
 
-        return $result;
-    } catch (\Exception $e) {
-        Log::error('Midtrans payment processing failed: ' . $e->getMessage());
-        return ['error' => 'Payment processing failed: ' . $e->getMessage()];
+        try {
+            $response = CoreApi::charge($transaction_data);
+
+            $result = [
+                'response' => $response,
+                'va_bank' => null,
+                'va_number' => null,
+                'redirect_url' => null,
+                'qr_string' => null,
+                'deeplink_redirect' => null
+            ];
+
+            // Handle different payment types response
+            if ($response->payment_type === 'bank_transfer') {
+                if (isset($response->va_numbers) && !empty($response->va_numbers)) {
+                    $result['va_bank'] = $response->va_numbers[0]->bank;
+                    $result['va_number'] = $response->va_numbers[0]->va_number;
+                } elseif (isset($response->permata_va_number)) {
+                    $result['va_bank'] = 'permata';
+                    $result['va_number'] = $response->permata_va_number;
+                }
+            } elseif ($response->payment_type === 'qris') {
+                // Handle QRIS response
+                if (isset($response->actions)) {
+                    foreach ($response->actions as $action) {
+                        if ($action->name === 'generate-qr-code') {
+                            $result['qr_string'] = $action->url;
+                            break;
+                        }
+                    }
+                }
+            } elseif ($response->payment_type === 'gopay') {
+                // Handle GoPay response
+                if (isset($response->actions)) {
+                    foreach ($response->actions as $action) {
+                        if ($action->name === 'generate-qr-code') {
+                            $result['qr_string'] = $action->url;
+                        } elseif ($action->name === 'deeplink-redirect') {
+                            $result['deeplink_redirect'] = $action->url;
+                        }
+                    }
+                }
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('Midtrans payment processing failed: ' . $e->getMessage());
+            return ['error' => 'Payment processing failed: ' . $e->getMessage()];
+        }
     }
-}
 
     public function callback(Request $request)
 {
