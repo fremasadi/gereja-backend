@@ -14,4 +14,15 @@ class ChurchEventController extends Controller
         return response()->json($events);
     }
 
+     // Ambil hanya field images dari semua event
+     public function images()
+     {
+         $images = ChurchEvent::select('images')->get();
+ 
+         return response()->json([
+             'status' => true,
+             'data' => $images,
+         ]);
+     }
+
 }
