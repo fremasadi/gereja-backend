@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(Login::class) // Mengganti dengan kelas Login kustom
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#3C65CA',
             ])
             ->brandName('Admin Gereja Bethany')
             ->darkMode(false) // Matikan dark mode
