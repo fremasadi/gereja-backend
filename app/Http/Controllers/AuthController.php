@@ -11,24 +11,29 @@ use App\Models\User;
 class AuthController extends Controller
 {
     public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'gender'   => 'required|in:male,female', // ✅ Validasi gender
-        ]);
-    
-        $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'password' => bcrypt($validated['password']),
-            'gender'   => $validated['gender'], // ✅ Simpan gender
-            'role'     => 'jemaat', // Force role jemaat
-        ]);
-    
-        return response()->json(['message' => 'Registration successful']);
-    }
+{
+    $validated = $request->validate([
+        'name'     => 'required|string|max:255',
+        'email'    => 'required|email|unique:users,email',
+        'password' => 'required|string|min:6',
+        'gender'   => 'required|in:male,female',
+        'phone'    => 'nullable|string|max:20',
+        'age'      => 'nullable|integer|min:0|max:120',
+    ]);
+
+    $user = User::create([
+        'name'     => $validated['name'],
+        'email'    => $validated['email'],
+        'password' => bcrypt($validated['password']),
+        'gender'   => $validated['gender'],
+        'phone'    => $validated['phone'] ?? null,
+        'age'      => $validated['age'] ?? null,
+        'role'     => 'jemaat',
+    ]);
+
+    return response()->json(['message' => 'Registration successful']);
+}
+
     
 
     public function login(Request $request)
