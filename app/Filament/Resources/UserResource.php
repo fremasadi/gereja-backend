@@ -18,7 +18,7 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
 
     public static function form(Form $form): Form
     {
@@ -31,11 +31,21 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
-                // Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
-                    ->password()
+                Forms\Components\TextInput::make('phone')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('age')
+                    ->required()
+                    ->maxLength(255),
+                Select::make('gender')
+                    ->label('Gender')
+                    ->required()
+                    ->options([
+                        'male' => 'Male',
+                        'female' => 'Female',
+                    ]),
+                // Forms\Components\DateTimePicker::make('email_verified_at'),
+                
                 Select::make('role')
                     ->options([
                         'admin' => 'Admin',
@@ -43,6 +53,10 @@ class UserResource extends Resource
                     ])
                     ->required()
                     ->label('Role'),
+                Forms\Components\TextInput::make('password')
+                    ->password()
+                    ->required()
+                    ->maxLength(255),
             ]);
     }
 
@@ -54,10 +68,11 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                // Tables\Columns\TextColumn::make('email_verified_at')
-                //     ->dateTime()
-                //     ->sortable(),
                 Tables\Columns\TextColumn::make('role'),
+                Tables\Columns\TextColumn::make('phone'),
+                Tables\Columns\TextColumn::make('age'),
+                Tables\Columns\TextColumn::make('gender'),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
