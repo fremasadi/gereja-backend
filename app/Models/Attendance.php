@@ -15,6 +15,7 @@ class Attendance extends Model
         'check_in_at',
         'check_out_at',
         'note',
+        'worship_service_id'
     ];
 
     protected $casts = [
@@ -37,6 +38,12 @@ class Attendance extends Model
     {
         return !is_null($this->check_out_at);
     }
+
+    public function worshipService()
+{
+    return $this->belongsTo(WorshipService::class);
+}
+
 
     
 }
