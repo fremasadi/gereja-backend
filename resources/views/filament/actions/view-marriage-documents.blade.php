@@ -1,4 +1,4 @@
-<div class="space-y-4">
+<div class="space-y-6">
     @php
         $documents = [
             'fotocopy_ktp' => 'KTP',
@@ -25,15 +25,15 @@
 
         @if (!empty($files))
             <div>
-                <p class="font-semibold mb-2">{{ $label }}</p>
-                <div class="flex flex-wrap gap-4">
+                <p class="font-semibold text-lg mb-2">{{ $label }}</p>
+                <div class="flex flex-wrap gap-6">
                     @foreach ($files as $filename)
                         @php
                             $relativePath = "marriages/{$recordId}/{$field}/{$filename}";
                             $url = asset('storage/' . $relativePath);
                         @endphp
                         <a href="{{ $url }}" target="_blank">
-                            <img src="{{ $url }}" class="w-32 h-32 object-cover rounded shadow" alt="{{ $label }}">
+                            <img src="{{ $url }}" class="w-60 h-60 object-cover rounded shadow-md hover:scale-105 transition duration-300" alt="{{ $label }}">
                         </a>
                     @endforeach
                 </div>
