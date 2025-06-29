@@ -102,8 +102,8 @@ class CounselingResource extends Resource
     {
         return [
             'index' => Pages\ListCounselings::route('/'),
-            'create' => Pages\CreateCounseling::route('/create'),
-            'edit' => Pages\EditCounseling::route('/{record}/edit'),
+            // 'create' => Pages\CreateCounseling::route('/create'),
+            // 'edit' => Pages\EditCounseling::route('/{record}/edit'),
         ];
     }
 }
