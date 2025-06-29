@@ -106,7 +106,7 @@ class MarriageResource extends Resource
     {
         return [
             'index' => Pages\ListMarriages::route('/'),
-            // 'create' => Pages\CreateMarriage::route('/create'),
+            'create' => Pages\CreateMarriage::route('/create'),
             // 'edit' => Pages\EditMarriage::route('/{record}/edit'),
         ];
     }
