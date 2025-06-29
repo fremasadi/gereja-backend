@@ -47,68 +47,67 @@ class MarriageResource extends Resource
                     Forms\Components\Section::make('Dokumen Pernikahan')
                 ->schema([
                     FileUpload::make('fotocopy_ktp')
-    ->image()
-    ->multiple()
-    ->label('Fotocopy KTP')
-    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_ktp')
-    ->preserveFilenames()
-    ->default(fn ($record) => collect($record?->fotocopy_ktp)->map(fn ($file) => 'marriages/' . $record->id . '/fotocopy_ktp/' . $file)->toArray())
-    ->required(),
+                        ->image()
+                        ->multiple()
+                        ->label('Fotocopy KTP')
+                        ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_ktp')
+                        ->preserveFilenames()
+                        ->default(fn ($record) => $record?->fotocopy_ktp ?? [])
+                        ->required(),
 
-FileUpload::make('fotocopy_kk')
-    ->image()
-    ->multiple()
-    ->label('Fotocopy KK')
-    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_kk')
-    ->preserveFilenames()
-    ->default(fn ($record) => collect($record?->fotocopy_kk)->map(fn ($file) => 'marriages/' . $record->id . '/fotocopy_kk/' . $file)->toArray())
-    ->required(),
+                    FileUpload::make('fotocopy_kk')
+                        ->image()
+                        ->multiple()
+                        ->label('Fotocopy KK')
+                        ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_kk')
+                        ->preserveFilenames()
+                        ->default(fn ($record) => $record?->fotocopy_kk ?? [])
+                        ->required(),
 
-FileUpload::make('fotocopy_akte_kelahiran')
-    ->image()
-    ->multiple()
-    ->label('Akte Kelahiran')
-    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_akte_kelahiran')
-    ->preserveFilenames()
-    ->default(fn ($record) => collect($record?->fotocopy_akte_kelahiran)->map(fn ($file) => 'marriages/' . $record->id . '/fotocopy_akte_kelahiran/' . $file)->toArray())
-    ->required(),
+                    FileUpload::make('fotocopy_akte_kelahiran')
+                        ->image()
+                        ->multiple()
+                        ->label('Akte Kelahiran')
+                        ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_akte_kelahiran')
+                        ->preserveFilenames()
+                        ->default(fn ($record) => $record?->fotocopy_akte_kelahiran ?? [])
+                        ->required(),
 
-FileUpload::make('fotocopy_akte_baptis_selam')
-    ->image()
-    ->multiple()
-    ->label('Akte Baptis Selam')
-    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_akte_baptis_selam')
-    ->preserveFilenames()
-    ->default(fn ($record) => collect($record?->fotocopy_akte_baptis_selam)->map(fn ($file) => 'marriages/' . $record->id . '/fotocopy_akte_baptis_selam/' . $file)->toArray())
-    ->required(),
+                    FileUpload::make('fotocopy_akte_baptis_selam')
+                        ->image()
+                        ->multiple()
+                        ->label('Akte Baptis Selam')
+                        ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_akte_baptis_selam')
+                        ->preserveFilenames()
+                        ->default(fn ($record) => $record?->fotocopy_akte_baptis_selam ?? [])
+                        ->required(),
 
-FileUpload::make('akte_nikah_orang_tua')
-    ->image()
-    ->multiple()
-    ->label('Akte Nikah Orang Tua')
-    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/akte_nikah_orang_tua')
-    ->preserveFilenames()
-    ->default(fn ($record) => collect($record?->akte_nikah_orang_tua)->map(fn ($file) => 'marriages/' . $record->id . '/akte_nikah_orang_tua/' . $file)->toArray())
-    ->required(),
+                    FileUpload::make('akte_nikah_orang_tua')
+                        ->image()
+                        ->multiple()
+                        ->label('Akte Nikah Orang Tua')
+                        ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/akte_nikah_orang_tua')
+                        ->preserveFilenames()
+                        ->default(fn ($record) => $record?->akte_nikah_orang_tua ?? [])
+                        ->required(),
 
-FileUpload::make('fotocopy_n1_n4')
-    ->image()
-    ->multiple()
-    ->label('Fotocopy N1-N4')
-    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_n1_n4')
-    ->preserveFilenames()
-    ->default(fn ($record) => collect($record?->fotocopy_n1_n4)->map(fn ($file) => 'marriages/' . $record->id . '/fotocopy_n1_n4/' . $file)->toArray())
-    ->required(),
+                    FileUpload::make('fotocopy_n1_n4')
+                        ->image()
+                        ->multiple()
+                        ->label('Fotocopy N1-N4')
+                        ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_n1_n4')
+                        ->preserveFilenames()
+                        ->default(fn ($record) => $record?->fotocopy_n1_n4 ?? [])
+                        ->required(),
 
-FileUpload::make('foto_berdua')
-    ->image()
-    ->multiple()
-    ->label('Foto Berdua')
-    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/foto_berdua')
-    ->preserveFilenames()
-    ->default(fn ($record) => collect($record?->foto_berdua)->map(fn ($file) => 'marriages/' . $record->id . '/foto_berdua/' . $file)->toArray())
-    ->required(),
-
+                    FileUpload::make('foto_berdua')
+                        ->image()
+                        ->multiple()
+                        ->label('Foto Berdua')
+                        ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/foto_berdua')
+                        ->preserveFilenames()
+                        ->default(fn ($record) => $record?->foto_berdua ?? [])
+                        ->required(),
                 ])
             ]);
     }
@@ -139,7 +138,7 @@ FileUpload::make('foto_berdua')
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
                 
                 Tables\Actions\Action::make('Lihat Dokumen')
                     ->icon('heroicon-o-eye')
@@ -173,7 +172,7 @@ FileUpload::make('foto_berdua')
         return [
             'index' => Pages\ListMarriages::route('/'),
             'create' => Pages\CreateMarriage::route('/create'),
-            'edit' => Pages\EditMarriage::route('/{record}/edit'),
+            // 'edit' => Pages\EditMarriage::route('/{record}/edit'),
         ];
     }
 }
