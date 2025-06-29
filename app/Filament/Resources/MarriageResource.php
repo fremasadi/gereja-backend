@@ -114,7 +114,7 @@ class MarriageResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
                 
                 Tables\Actions\Action::make('Lihat Dokumen')
                     ->icon('heroicon-o-eye')
@@ -147,7 +147,7 @@ class MarriageResource extends Resource
     {
         return [
             'index' => Pages\ListMarriages::route('/'),
-            'create' => Pages\CreateMarriage::route('/create'),
+            // 'create' => Pages\CreateMarriage::route('/create'),
             // 'edit' => Pages\EditMarriage::route('/{record}/edit'),
         ];
     }
