@@ -9,18 +9,17 @@
             'fotocopy_n1_n4' => 'Fotocopy N1-N4',
             'foto_berdua' => 'Foto Berdua',
         ];
+        $recordId = $record->id;
     @endphp
 
     @foreach ($documents as $field => $label)
         @php
             $files = $record->{$field};
 
-            // Decode JSON jika masih dalam bentuk string
             if (is_string($files)) {
                 $files = json_decode($files, true);
             }
 
-            // Pastikan selalu array
             $files = is_array($files) ? $files : [];
         @endphp
 
@@ -28,9 +27,10 @@
             <div>
                 <p class="font-semibold mb-2">{{ $label }}</p>
                 <div class="flex flex-wrap gap-4">
-                    @foreach ($files as $file)
+                    @foreach ($files as $filename)
                         @php
-                            $url = asset(Storage::url($file));
+                            $relativePath = "marriages/{$recordId}/{$field}/{$filename}";
+                            $url = asset('storage/' . $relativePath);
                         @endphp
                         <a href="{{ $url }}" target="_blank">
                             <img src="{{ $url }}" class="w-32 h-32 object-cover rounded shadow" alt="{{ $label }}">
