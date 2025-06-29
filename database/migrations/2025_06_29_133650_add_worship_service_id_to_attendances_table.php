@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::table('attendances', function (Blueprint $table) {
             $table->foreignId('worship_service_id')
                   ->nullable() // kalau datanya belum wajib
-                  ->constrained('worship_services')
-                  ->onDelete('set null');
-        });
+                  ->constrained('worship_services');
+                        });
     }
 
     /**
