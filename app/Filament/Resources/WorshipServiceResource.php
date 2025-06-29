@@ -71,7 +71,26 @@ class WorshipServiceResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('download_barcode')
+                    ->label('Download Barcode')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function ($record) {
+                        $barcodeData = $record->id; // Bisa juga $record->name
+                        $fileName = "barcode-{$barcodeData}.png";
+            
+                        // Generate barcode
+                        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+                        $barcodeImage = $generator->getBarcode($barcodeData, $generator::TYPE_CODE_128);
+            
+                        // Simpan sementara ke storage atau response langsung
+                        $path = storage_path("app/public/{$fileName}");
+                        file_put_contents($path, $barcodeImage);
+            
+                        return response()->download($path)->deleteFileAfterSend();
+                    })
+                    ->requiresConfirmation()
             ])
+            
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
