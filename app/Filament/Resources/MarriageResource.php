@@ -46,36 +46,43 @@ class MarriageResource extends Resource
                     ->required(),
                 FileUpload::make('fotocopy_ktp')
                     ->image()
+                    ->multiple()
                     ->label('Fotocopy KTP')
                     ->required(),
                 
                 FileUpload::make('fotocopy_kk')
                     ->image()
+                    ->multiple()
                     ->label('Fotocopy KK')
                     ->required(),
                 
                 FileUpload::make('fotocopy_akte_kelahiran')
                     ->image()
+                    ->multiple()
                     ->label('Akte Kelahiran')
                     ->required(),
                 
                 FileUpload::make('fotocopy_akte_baptis_selam')
                     ->image()
+                    ->multiple()
                     ->label('Akte Baptis Selam')
                     ->required(),
                 
                 FileUpload::make('akte_nikah_orang_tua')
                     ->image()
+                    ->multiple()
                     ->label('Akte Nikah Orang Tua')
                     ->required(),
                 
                 FileUpload::make('fotocopy_n1_n4')
                     ->image()
+                    ->multiple()
                     ->label('Fotocopy N1-N4')
                     ->required(),
                 
                 FileUpload::make('foto_berdua')
                     ->image()
+                    ->multiple()
                     ->label('Foto Berdua')
                     ->required(),
             ]);
@@ -108,7 +115,20 @@ class MarriageResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                
+                Tables\Actions\Action::make('Lihat Dokumen')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->modalHeading('Dokumen Pernikahan')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup')
+                    ->modalContent(function (\App\Models\Marriage $record) {
+                        return view('filament.actions.view-marriage-documents', [
+                            'record' => $record,
+                        ]);
+                    }),
             ])
+            
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
