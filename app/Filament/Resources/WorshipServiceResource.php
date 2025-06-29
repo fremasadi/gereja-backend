@@ -73,7 +73,7 @@ class WorshipServiceResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('download_qrcode')
                     ->label('Download QR Code')
-                    ->icon('heroicon-o-qrcode')
+                    ->icon('heroicon-o-arrow-down-tray')
                     ->action(function ($record) {
                         $qrData = $record->id; // Bisa juga name atau data lain
                         $fileName = "qrcode-{$qrData}.png";
