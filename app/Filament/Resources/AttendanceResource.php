@@ -47,6 +47,9 @@ class AttendanceResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('worshipService.name')
+                    ->label('Worship Service'),
+
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Name Jemaat')
                     ->sortable()
@@ -74,11 +77,11 @@ class AttendanceResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    // Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
