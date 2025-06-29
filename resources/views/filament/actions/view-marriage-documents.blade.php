@@ -13,7 +13,15 @@
 
     @foreach ($documents as $field => $label)
         @php
-            $files = is_array($record->{$field}) ? $record->{$field} : json_decode($record->{$field}, true);
+            $files = $record->{$field};
+
+            // Decode JSON jika masih dalam bentuk string
+            if (is_string($files)) {
+                $files = json_decode($files, true);
+            }
+
+            // Pastikan selalu array
+            $files = is_array($files) ? $files : [];
         @endphp
 
         @if (!empty($files))
@@ -21,10 +29,12 @@
                 <p class="font-semibold mb-2">{{ $label }}</p>
                 <div class="flex flex-wrap gap-4">
                     @foreach ($files as $file)
-                    <a href="{{ Storage::url($file) }}" target="_blank">
-                        <img src="{{ Storage::url($file) }}" class="w-32 h-32 object-cover rounded shadow" alt="{{ $label }}">
-                    </a>
-                    
+                        @php
+                            $url = asset(Storage::url($file));
+                        @endphp
+                        <a href="{{ $url }}" target="_blank">
+                            <img src="{{ $url }}" class="w-32 h-32 object-cover rounded shadow" alt="{{ $label }}">
+                        </a>
                     @endforeach
                 </div>
             </div>
