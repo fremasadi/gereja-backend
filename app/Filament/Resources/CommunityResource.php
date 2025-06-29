@@ -21,7 +21,7 @@ class CommunityResource extends Resource
 
     public static function getNavigationGroup(): string
     {
-        return '🧍 Jemaat & Komunitas';
+        return 'Jemaat & Community';
     }
     
     public static function getNavigationIcon(): string

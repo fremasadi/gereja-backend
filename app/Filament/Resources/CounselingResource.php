@@ -19,7 +19,7 @@ class CounselingResource extends Resource
 
     public static function getNavigationGroup(): string
     {
-        return '📝 Kehadiran & Pelayanan';
+        return 'Presence & Service';
     }
     
     public static function getNavigationIcon(): string

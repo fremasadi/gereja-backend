@@ -20,7 +20,7 @@ class WorshipServiceResource extends Resource
 
     public static function getNavigationGroup(): string
     {
-        return '⛪ Ibadah & Acara';
+        return 'Worship & Events';    
     }
     
     public static function getNavigationIcon(): string

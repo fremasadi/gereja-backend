@@ -21,7 +21,7 @@ class InfaqResource extends Resource
 
     public static function getNavigationGroup(): string
     {
-        return '💰 Keuangan';
+        return 'Offering Finance';
     }
     
     public static function getNavigationIcon(): string
