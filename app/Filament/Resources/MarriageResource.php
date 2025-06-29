@@ -44,46 +44,60 @@ class MarriageResource extends Resource
                     ->maxLength(255),
                 Forms\Components\DatePicker::make('tanggal_pernikahan')
                     ->required(),
-                FileUpload::make('fotocopy_ktp')
+                    FileUpload::make('fotocopy_ktp')
                     ->image()
                     ->multiple()
                     ->label('Fotocopy KTP')
+                    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_ktp')
+                    ->preserveFilenames()
                     ->required(),
                 
                 FileUpload::make('fotocopy_kk')
                     ->image()
                     ->multiple()
                     ->label('Fotocopy KK')
+                    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_kk')
+                    ->preserveFilenames()
                     ->required(),
                 
                 FileUpload::make('fotocopy_akte_kelahiran')
                     ->image()
                     ->multiple()
                     ->label('Akte Kelahiran')
+                    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_akte_kelahiran')
+                    ->preserveFilenames()
                     ->required(),
                 
                 FileUpload::make('fotocopy_akte_baptis_selam')
                     ->image()
                     ->multiple()
                     ->label('Akte Baptis Selam')
+                    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_akte_baptis_selam')
+                    ->preserveFilenames()
                     ->required(),
                 
                 FileUpload::make('akte_nikah_orang_tua')
                     ->image()
                     ->multiple()
                     ->label('Akte Nikah Orang Tua')
+                    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/akte_nikah_orang_tua')
+                    ->preserveFilenames()
                     ->required(),
                 
                 FileUpload::make('fotocopy_n1_n4')
                     ->image()
                     ->multiple()
                     ->label('Fotocopy N1-N4')
+                    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/fotocopy_n1_n4')
+                    ->preserveFilenames()
                     ->required(),
                 
                 FileUpload::make('foto_berdua')
                     ->image()
                     ->multiple()
                     ->label('Foto Berdua')
+                    ->directory(fn ($get, $record) => 'marriages/' . ($record?->id ?? 'temp') . '/foto_berdua')
+                    ->preserveFilenames()
                     ->required(),
             ]);
     }
@@ -114,7 +128,7 @@ class MarriageResource extends Resource
                 //
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make(),
                 
                 Tables\Actions\Action::make('Lihat Dokumen')
                     ->icon('heroicon-o-eye')
@@ -147,8 +161,8 @@ class MarriageResource extends Resource
     {
         return [
             'index' => Pages\ListMarriages::route('/'),
-            // 'create' => Pages\CreateMarriage::route('/create'),
-            // 'edit' => Pages\EditMarriage::route('/{record}/edit'),
+            'create' => Pages\CreateMarriage::route('/create'),
+            'edit' => Pages\EditMarriage::route('/{record}/edit'),
         ];
     }
 }
