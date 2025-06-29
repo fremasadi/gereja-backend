@@ -21,9 +21,10 @@
                 <p class="font-semibold mb-2">{{ $label }}</p>
                 <div class="flex flex-wrap gap-4">
                     @foreach ($files as $file)
-                        <a href="{{ Storage::url($file) }}" target="_blank">
-                            <img src="{{ Storage::url($file) }}" class="w-32 h-32 object-cover rounded shadow" alt="{{ $label }}">
-                        </a>
+                    <a href="{{ Storage::url($file) }}" target="_blank">
+                        <img src="{{ Storage::url($file) }}" class="w-32 h-32 object-cover rounded shadow" alt="{{ $label }}">
+                    </a>
+                    
                     @endforeach
                 </div>
             </div>
