@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TimePicker;
+use SimpleSoftwareIO\QrCode\Generator;
 
 class WorshipServiceResource extends Resource
 {
