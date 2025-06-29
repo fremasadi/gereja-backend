@@ -71,24 +71,24 @@ class WorshipServiceResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('download_barcode')
-                    ->label('Download Barcode')
-                    ->icon('heroicon-o-arrow-down-tray')
+                Tables\Actions\Action::make('download_qrcode')
+                    ->label('Download QR Code')
+                    ->icon('heroicon-o-qrcode')
                     ->action(function ($record) {
-                        $barcodeData = $record->id; // Bisa juga $record->name
-                        $fileName = "barcode-{$barcodeData}.png";
-            
-                        // Generate barcode
-                        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
-                        $barcodeImage = $generator->getBarcode($barcodeData, $generator::TYPE_CODE_128);
-            
-                        // Simpan sementara ke storage atau response langsung
+                        $qrData = $record->id; // Bisa juga name atau data lain
+                        $fileName = "qrcode-{$qrData}.png";
+
+                        // Generate QR Code PNG
+                        $qrImage = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(300)->generate($qrData);
+
+                        // Simpan sementara
                         $path = storage_path("app/public/{$fileName}");
-                        file_put_contents($path, $barcodeImage);
-            
+                        file_put_contents($path, $qrImage);
+
                         return response()->download($path)->deleteFileAfterSend();
                     })
                     ->requiresConfirmation()
+
             ])
             
             ->bulkActions([

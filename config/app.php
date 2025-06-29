@@ -126,6 +126,9 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+    'QrCode' => \SimpleSoftwareIO\QrCode\Facades\QrCode::class,
+
+
     /*
     |--------------------------------------------------------------------------
     | Maintenance Mode Driver
