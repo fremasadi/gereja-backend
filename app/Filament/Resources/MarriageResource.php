@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\FileUpload;
 
 class MarriageResource extends Resource
 {
@@ -43,19 +44,39 @@ class MarriageResource extends Resource
                     ->maxLength(255),
                 Forms\Components\DatePicker::make('tanggal_pernikahan')
                     ->required(),
-                Forms\Components\TextInput::make('fotocopy_ktp')
+                FileUpload::make('fotocopy_ktp')
+                    ->image()
+                    ->label('Fotocopy KTP')
                     ->required(),
-                Forms\Components\TextInput::make('fotocopy_kk')
+                
+                FileUpload::make('fotocopy_kk')
+                    ->image()
+                    ->label('Fotocopy KK')
                     ->required(),
-                Forms\Components\TextInput::make('fotocopy_akte_kelahiran')
+                
+                FileUpload::make('fotocopy_akte_kelahiran')
+                    ->image()
+                    ->label('Akte Kelahiran')
                     ->required(),
-                Forms\Components\TextInput::make('fotocopy_akte_baptis_selam')
+                
+                FileUpload::make('fotocopy_akte_baptis_selam')
+                    ->image()
+                    ->label('Akte Baptis Selam')
                     ->required(),
-                Forms\Components\TextInput::make('akte_nikah_orang_tua')
+                
+                FileUpload::make('akte_nikah_orang_tua')
+                    ->image()
+                    ->label('Akte Nikah Orang Tua')
                     ->required(),
-                Forms\Components\TextInput::make('fotocopy_n1_n4')
+                
+                FileUpload::make('fotocopy_n1_n4')
+                    ->image()
+                    ->label('Fotocopy N1-N4')
                     ->required(),
-                Forms\Components\TextInput::make('foto_berdua')
+                
+                FileUpload::make('foto_berdua')
+                    ->image()
+                    ->label('Foto Berdua')
                     ->required(),
             ]);
     }
