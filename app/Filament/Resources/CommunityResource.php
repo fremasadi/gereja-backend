@@ -19,8 +19,16 @@ class CommunityResource extends Resource
 {
     protected static ?string $model = Community::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationGroup(): string
+    {
+        return '🧍 Jemaat & Komunitas';
+    }
+    
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-users';
+    }
+    
     public static function form(Form $form): Form
     {
         return $form

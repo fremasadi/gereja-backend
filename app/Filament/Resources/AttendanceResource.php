@@ -17,8 +17,16 @@ class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationGroup(): string
+    {
+        return '📝 Kehadiran & Pelayanan';
+    }
+    
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-check-badge';
+    }
+    
     public static function form(Form $form): Form
     {
         return $form

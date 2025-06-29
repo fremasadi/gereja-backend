@@ -17,8 +17,16 @@ class ChurchEventResource extends Resource
 {
     protected static ?string $model = ChurchEvent::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationGroup(): string
+    {
+        return '⛪ Ibadah & Acara';
+    }
+    
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-megaphone';
+    }
+    
     public static function form(Form $form): Form
 {
     return $form

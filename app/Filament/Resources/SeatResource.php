@@ -15,8 +15,16 @@ class SeatResource extends Resource
 {
     protected static ?string $model = Seat::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationGroup(): string
+    {
+        return '⛪ Ibadah & Acara';
+    }
+    
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-view-columns';
+    }
+    
 
     public static function form(Form $form): Form
     {

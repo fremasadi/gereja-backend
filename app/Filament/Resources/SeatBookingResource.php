@@ -20,8 +20,16 @@ class SeatBookingResource extends Resource
 {
     protected static ?string $model = SeatBooking::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationGroup(): string
+    {
+        return '⛪ Ibadah & Acara';
+    }
+    
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-ticket';
+    }
+    
     public static function form(Form $form): Form
     {
         return $form

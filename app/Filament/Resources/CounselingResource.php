@@ -17,8 +17,16 @@ class CounselingResource extends Resource
 {
     protected static ?string $model = Counseling::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationGroup(): string
+    {
+        return '📝 Kehadiran & Pelayanan';
+    }
+    
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-chat-bubble-left-right';
+    }
+    
     public static function form(Form $form): Form
     {
         return $form

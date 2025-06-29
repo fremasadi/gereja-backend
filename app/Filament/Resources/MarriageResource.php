@@ -17,8 +17,16 @@ class MarriageResource extends Resource
 {
     protected static ?string $model = Marriage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationGroup(): string
+    {
+        return '📝 Kehadiran & Pelayanan';
+    }
+    
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-heart';
+    }
+    
     public static function form(Form $form): Form
     {
         return $form

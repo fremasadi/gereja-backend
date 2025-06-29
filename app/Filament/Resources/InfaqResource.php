@@ -17,9 +17,18 @@ class InfaqResource extends Resource
 {
     protected static ?string $model = Infaq::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel = 'Persembahan';
+    protected static ?string $navigationLabel = 'Church offerings';
 
+    public static function getNavigationGroup(): string
+    {
+        return '💰 Keuangan';
+    }
+    
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-banknotes';
+    }
+    
     public static function getModelLabel(): string
     {
         return 'Persembahan';
