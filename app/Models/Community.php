@@ -17,11 +17,43 @@ class Community extends Model
         'images',
         'status',
     ];
+// app/Models/Community.php
+protected $casts = [
+    'images' => 'array',
+];
 
-    // Konversi otomatis ke array
-    protected $casts = [
-        'images' => 'array',
-    ];
+// Accessor untuk mengembalikan path lengkap
+public function getImagesAttribute($value)
+{
+    if (!$value) return [];
+    
+    $images = is_string($value) ? json_decode($value, true) : $value;
+    
+    return collect($images)->map(function ($image) {
+        // Jika sudah ada path communities, kembalikan apa adanya
+        if (str_starts_with($image, 'communities/')) {
+            return $image;
+        }
+        // Jika tidak, tambahkan prefix communities/
+        return 'communities/' . ltrim($image, '/');
+    })->toArray();
+}
+
+// Mutator untuk menyimpan tanpa prefix
+public function setImagesAttribute($value)
+{
+    if (!$value) {
+        $this->attributes['images'] = json_encode([]);
+        return;
+    }
+    
+    $images = collect($value)->map(function ($image) {
+        // Hapus prefix communities/ saat menyimpan
+        return str_replace('communities/', '', $image);
+    })->toArray();
+    
+    $this->attributes['images'] = json_encode($images);
+}
 
     // Accessor jika ingin nama komunitas capitalized
     public function getFormattedNameAttribute()
