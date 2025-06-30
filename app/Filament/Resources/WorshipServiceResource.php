@@ -74,30 +74,49 @@ class WorshipServiceResource extends Resource
         ])
         ->actions([
             Tables\Actions\EditAction::make(),
-            Tables\Actions\Action::make('downloadQRCodePDF')
-    ->label('Download QR Code PDF')
-    ->icon('heroicon-o-qr-code')
-    ->color('success')
-    ->action(function ($record) {
+             // 👁️ Show QR Code dalam Modal
+    Tables\Actions\Action::make('showQRCodeModal')
+    ->label('Tampilkan QR Code')
+    ->icon('heroicon-o-eye')
+    ->color('primary')
+    ->modalHeading('QR Code Data ID')
+    ->modalSubmitAction(false) // Tidak butuh tombol submit
+    ->modalCancelActionLabel('Tutup')
+    ->modalContent(function ($record) {
         $generator = new \Milon\Barcode\DNS2D();
-
-        // 🧾 Simpan hanya ID (bukan JSON)
         $qrData = (string) $record->id;
-
         $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
+        $qrImage = 'data:image/png;base64,' . $qrCodeBase64;
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.barcode', [
-            'record' => $record,
-            'qrCodeImage' => 'data:image/png;base64,' . $qrCodeBase64,
+        return view('components.qr-code-modal', [
+            'qrCodeImage' => $qrImage,
             'qrData' => $qrData,
         ]);
+    }),
+    //         Tables\Actions\Action::make('downloadQRCodePDF')
+    // ->label('Download QR Code PDF')
+    // ->icon('heroicon-o-qr-code')
+    // ->color('success')
+    // ->action(function ($record) {
+    //     $generator = new \Milon\Barcode\DNS2D();
 
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'qrcode-' . $record->id . '.pdf', [
-            'Content-Type' => 'application/pdf',
-        ]);
-    })
+    //     // 🧾 Simpan hanya ID (bukan JSON)
+    //     $qrData = (string) $record->id;
+
+    //     $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
+
+    //     $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.barcode', [
+    //         'record' => $record,
+    //         'qrCodeImage' => 'data:image/png;base64,' . $qrCodeBase64,
+    //         'qrData' => $qrData,
+    //     ]);
+
+    //     return response()->streamDownload(function () use ($pdf) {
+    //         echo $pdf->output();
+    //     }, 'qrcode-' . $record->id . '.pdf', [
+    //         'Content-Type' => 'application/pdf',
+    //     ]);
+    // })
 
 
         ])
