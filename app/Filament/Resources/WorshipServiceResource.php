@@ -98,7 +98,6 @@ class WorshipServiceResource extends Resource
             'Content-Type' => 'application/pdf',
         ]);
     })
-    ->requiresConfirmation()
 
 
         ])
