@@ -68,23 +68,7 @@
         <div class="qr-image">
             <img src="{{ $qrCodeImage }}" alt="QR Code">
         </div>
-
-        @php
-            $decodedData = json_decode($qrData, true);
-        @endphp
-
-<div class="data-box">
-    @php
-        $decodedData = json_decode($qrData, true);
-    @endphp
-
-    @if (is_array($decodedData) && isset($decodedData['id']))
-        <p><strong>ID:</strong> {{ $decodedData['id'] }}</p>
-    @else
-        <p><strong>ID:</strong> {{ $qrData }}</p>
-    @endif
-</div>
-
+        
 
         <div class="footer">
             Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}

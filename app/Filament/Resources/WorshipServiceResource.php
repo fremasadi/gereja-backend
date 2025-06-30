@@ -81,14 +81,8 @@ class WorshipServiceResource extends Resource
     ->action(function ($record) {
         $generator = new \Milon\Barcode\DNS2D();
 
-        // 🔁 Encode data lengkap dalam bentuk JSON
-        $qrData = json_encode([
-            'id' => $record->id,
-            'name' => $record->name,
-            'service_time' => $record->service_time,
-            'is_active' => $record->is_active,
-            'created_at' => $record->created_at->toDateTimeString(),
-        ]);
+        // 🧾 Simpan hanya ID (bukan JSON)
+        $qrData = (string) $record->id;
 
         $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
 
@@ -105,6 +99,7 @@ class WorshipServiceResource extends Resource
         ]);
     })
     ->requiresConfirmation()
+
 
         ])
         ->bulkActions([
