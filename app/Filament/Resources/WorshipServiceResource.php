@@ -53,62 +53,62 @@ class WorshipServiceResource extends Resource
     }
 
     public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('service_time'),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('downloadQRCodePDF')
-                    ->label('Download QR Code PDF')
-                    ->icon('heroicon-o-qr-code')
-                    ->color('success')
-                    ->action(function ($record) {
-                        // Generate QR Code dengan data lengkap
-                        $generator = new DNS2D();
-                        
-                        // Data yang akan disimpan dalam QR Code
-                        $qrData = $record->id;
-                        
-                        $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
-                        
-                        // Generate PDF
-                        $pdf = Pdf::loadView('pdf.barcode', [
-                            'record' => $record,
-                            'qrCodeImage' => 'data:image/png;base64,' . $qrCodeBase64,
-                            'qrData' => $qrData
-                        ]);
-                        
-                        return response()->streamDownload(function () use ($pdf) {
-                            echo $pdf->output();
-                        }, 'qrcode-' . $record->id . '.pdf', [
-                            'Content-Type' => 'application/pdf',
-                        ]);
-                    })
-                    ->requiresConfirmation(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+{
+    return $table
+        ->columns([
+            Tables\Columns\TextColumn::make('name')
+                ->searchable(),
+            Tables\Columns\TextColumn::make('service_time'),
+            Tables\Columns\IconColumn::make('is_active')
+                ->boolean(),
+            Tables\Columns\TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\TextColumn::make('updated_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ])
+        ->filters([
+            //
+        ])
+        ->actions([
+            Tables\Actions\EditAction::make(),
+            Tables\Actions\Action::make('downloadQRCodePDF')
+                ->label('Download QR Code PDF')
+                ->icon('heroicon-o-qr-code')
+                ->color('success')
+                ->action(function ($record) {
+                    // Generate QR Code dengan data lengkap
+                    $generator = new DNS2D();
+                    
+                    // Data yang akan disimpan dalam QR Code
+                    $qrData = $record->id;
+                    
+                    $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
+                    
+                    // Generate PDF
+                    $pdf = Pdf::loadView('pdf.barcode', [
+                        'record' => $record,
+                        'qrCodeImage' => 'data:image/png;base64,' . $qrCodeBase64,
+                        'qrData' => $qrData
+                    ]);
+                    
+                    return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->output();
+                    }, 'qrcode-' . $record->id . '.pdf', [
+                        'Content-Type' => 'application/pdf',
+                    ]);
+                })
+                ->requiresConfirmation(),
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]),
+        ]);
+}
 
     public static function getRelations(): array
     {
