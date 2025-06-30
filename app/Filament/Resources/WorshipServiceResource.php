@@ -14,9 +14,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TimePicker;
 use SimpleSoftwareIO\QrCode\Generator;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
-use Milon\Barcode\DNS2D;
 
 class WorshipServiceResource extends Resource
 {
