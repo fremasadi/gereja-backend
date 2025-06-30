@@ -73,17 +73,18 @@
             $decodedData = json_decode($qrData, true);
         @endphp
 
-        <div class="data-box">
-            @if (is_array($decodedData))
-                <p><strong>ID:</strong> {{ $decodedData['id'] }}</p>
-                <p><strong>Nama:</strong> {{ $decodedData['name'] }}</p>
-                <p><strong>Waktu Ibadah:</strong> {{ $decodedData['service_time'] }}</p>
-                <p><strong>Status:</strong> {{ $decodedData['is_active'] ? 'Aktif' : 'Nonaktif' }}</p>
-                <p><strong>Dibuat:</strong> {{ $decodedData['created_at'] }}</p>
-            @else
-                <p><strong>Data QR:</strong> {{ $qrData }}</p>
-            @endif
-        </div>
+<div class="data-box">
+    @php
+        $decodedData = json_decode($qrData, true);
+    @endphp
+
+    @if (is_array($decodedData) && isset($decodedData['id']))
+        <p><strong>ID:</strong> {{ $decodedData['id'] }}</p>
+    @else
+        <p><strong>ID:</strong> {{ $qrData }}</p>
+    @endif
+</div>
+
 
         <div class="footer">
             Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}
