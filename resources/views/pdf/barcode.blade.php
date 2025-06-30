@@ -270,15 +270,40 @@
             <div class="attendance-title">QR Code Check-In</div>
         </div>
         
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Service ID</div>
+                <div class="info-value">{{ $record->id }}</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Service Name</div>
+                <div class="info-value">{{ $record->name }}</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Service Time</div>
+                <div class="info-value">{{ $record->service_time }}</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Status</div>
+                <div class="info-value">{{ $record->is_active ? 'Active' : 'Inactive' }}</div>
+            </div>
+        </div>
+        
         <div class="qrcode-section">
             <div class="qrcode-image">
                 <img src="{{ $qrCodeImage }}" alt="QR Code Absensi {{ $record->id }}">
             </div>
+            <div class="qrcode-id">ID: {{ $qrData }}</div>
         </div>
         
         <div class="scan-instruction">
             <span class="scan-icon">📱</span>
             Scan untuk Check-In Ibadah
+        </div>
+        
+        <div class="data-preview">
+            <strong>QR Code Data:</strong><br>
+            Service ID: {{ $qrData }}
         </div>
         
         <div class="footer">
