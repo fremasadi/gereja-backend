@@ -48,7 +48,33 @@ class CommunityResource extends Resource
                     ->image()
                     ->multiple()
                     ->directory('communities')
-                    ->required(),
+                    ->disk('public')
+                    ->visibility('public')
+                    ->required()
+                    ->loadStateFromRelationshipsUsing(function (FileUpload $component, $state, $record) {
+                        if (!$record || !$record->images) {
+                            return [];
+                        }
+                        
+                        // Return full path untuk existing files
+                        return collect($record->images)->map(function ($image) {
+                            return 'communities/' . ltrim($image, '/');
+                        })->toArray();
+                    })
+                    ->saveRelationshipsUsing(function (FileUpload $component, $state, $record) {
+                        if (!$state) {
+                            $record->images = [];
+                            return;
+                        }
+                        
+                        // Simpan hanya nama file
+                        $images = collect($state)->map(function ($path) {
+                            return basename($path);
+                        })->toArray();
+                        
+                        $record->images = $images;
+                        $record->save();
+                    }),
                 Select::make('status')
                     ->label('Status')
                     ->required()
