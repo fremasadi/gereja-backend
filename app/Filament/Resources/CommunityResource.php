@@ -48,6 +48,7 @@ class CommunityResource extends Resource
     ->image()
     ->multiple()
     ->directory('communities')
+    ->storeFileNamesIn('images') // 👈 penting kalau ingin full path
     ->required(),
                     Select::make('status')
                     ->label('Status')
