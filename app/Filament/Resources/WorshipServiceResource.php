@@ -1,127 +1,93 @@
-<?php
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QR Code Absensi - {{ $record->id }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f4f6f8;
+            color: #333;
+        }
 
-namespace App\Filament\Resources;
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
 
-use App\Filament\Resources\WorshipServiceResource\Pages;
-use App\Filament\Resources\WorshipServiceResource\RelationManagers;
-use App\Models\WorshipService;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\TimePicker;
-use SimpleSoftwareIO\QrCode\Generator;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
-use Milon\Barcode\DNS2D;
-class WorshipServiceResource extends Resource
-{
-    protected static ?string $model = WorshipService::class;
+        h1 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
 
-    public static function getNavigationGroup(): string
-    {
-        return 'Worship & Events';    
-    }
-    
-    public static function getNavigationIcon(): string
-    {
-        return 'heroicon-o-calendar';
-    }
-    
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                TimePicker::make('service_time')
-                    ->required()
-                    ->seconds(false)
-                    ->minutesStep(15)
-                    ->displayFormat('h:i A')
-                    ->native(false)
-                    ->label('Start Time')
-                    ->helperText('Select the service start time'),
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
-            ]);
-    }
+        .subtitle {
+            margin-bottom: 30px;
+            color: #777;
+        }
 
-    public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('name')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('service_time'),
-            Tables\Columns\IconColumn::make('is_active')
-                ->boolean(),
-            Tables\Columns\TextColumn::make('created_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-            Tables\Columns\TextColumn::make('updated_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-        ])
-        ->filters([
-            //
-        ])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-            Tables\Actions\Action::make('downloadQRCodePDF')
-                ->label('Download QR Code PDF')
-                ->icon('heroicon-o-qr-code')
-                ->color('success')
-                ->action(function ($record) {
-                    // Generate QR Code dengan data lengkap
-                    $generator = new DNS2D();
-                    
-                    // Data yang akan disimpan dalam QR Code
-                    $qrData = (string) $record->id;
-                    
-                    $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
-                    
-                    // Generate PDF
-                    $pdf = Pdf::loadView('pdf.barcode', [
-                        'record' => $record,
-                        'qrCodeImage' => 'data:image/png;base64,' . $qrCodeBase64,
-                        'qrData' => $qrData
-                    ]);
-                    
-                    return response()->streamDownload(function () use ($pdf) {
-                        echo $pdf->output();
-                    }, 'qrcode-' . $record->id . '.pdf', [
-                        'Content-Type' => 'application/pdf',
-                    ]);
-                })
-                ->requiresConfirmation(),
-        ])
-        ->bulkActions([
-            Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]),
-        ]);
-}
+        .qr-image {
+            margin: 30px 0;
+        }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
+        .qr-image img {
+            width: 200px;
+            height: 200px;
+        }
 
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListWorshipServices::route('/'),
-            'create' => Pages\CreateWorshipService::route('/create'),
-            'edit' => Pages\EditWorshipService::route('/{record}/edit'),
-        ];
-    }
-}
+        .data-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .data-box strong {
+            color: #444;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Ibadah</h1>
+        <div class="subtitle">Gereja Bethany - Sistem Absensi Digital</div>
+
+        <div class="qr-image">
+            <img src="{{ $qrCodeImage }}" alt="QR Code">
+        </div>
+
+        @php
+            $decodedData = json_decode($qrData, true);
+        @endphp
+
+        <div class="data-box">
+            @if (is_array($decodedData))
+                <p><strong>ID:</strong> {{ $decodedData['id'] }}</p>
+                <p><strong>Nama:</strong> {{ $decodedData['name'] }}</p>
+                <p><strong>Waktu Ibadah:</strong> {{ $decodedData['service_time'] }}</p>
+                <p><strong>Status:</strong> {{ $decodedData['is_active'] ? 'Aktif' : 'Nonaktif' }}</p>
+                <p><strong>Dibuat:</strong> {{ $decodedData['created_at'] }}</p>
+            @else
+                <p><strong>Data QR:</strong> {{ $qrData }}</p>
+            @endif
+        </div>
+
+        <div class="footer">
+            Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}
+        </div>
+    </div>
+</body>
+</html>
