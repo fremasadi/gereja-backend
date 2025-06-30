@@ -43,12 +43,30 @@ class CommunityResource extends Resource
                 Forms\Components\TextInput::make('contact_phone')
                     ->tel()
                     ->maxLength(255),
-                    Forms\Components\FileUpload::make('images')
-    ->label('Gambar Komunitas')
-    ->image()
-    ->multiple()
-    ->directory('communities')
-    ->required(),
+                Forms\Components\FileUpload::make('images')
+                    ->label('Gambar Komunitas')
+                    ->image()
+                    ->multiple()
+                    ->directory('communities')
+                    ->required()
+                    ->getUploadedFileNameForStorageUsing(
+                        fn (TemporaryUploadedFile $file): string => (string) str($file->getClientOriginalName())
+                            ->prepend(now()->timestamp . '_')
+                    )
+                    ->saveUploadedFileUsing(function (TemporaryUploadedFile $file, $get, $set, $component) {
+                        $filename = $component->getUploadedFileNameForStorage($file);
+                        $path = $file->storeAs('communities', $filename, 'public');
+                        return $filename; // Simpan hanya nama file
+                    })
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) return [];
+                        
+                        return collect($state)->map(function ($image) {
+                            return str_starts_with($image, 'communities/') 
+                                ? str_replace('communities/', '', $image)
+                                : $image;
+                        })->toArray();
+                    }),
                     Select::make('status')
                     ->label('Status')
                     ->required()
