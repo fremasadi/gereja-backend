@@ -83,7 +83,7 @@ class WorshipServiceResource extends Resource
                     $generator = new DNS2D();
                     
                     // Data yang akan disimpan dalam QR Code
-                    $qrData = $record->id;
+                    $qrData = (string) $record->id;
                     
                     $qrCodeBase64 = $generator->getBarcodePNG($qrData, 'QRCODE', 8, 8);
                     
