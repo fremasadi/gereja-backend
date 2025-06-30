@@ -74,25 +74,32 @@ class WorshipServiceResource extends Resource
                 Tables\Actions\EditAction::make(),
                 
                 // Action Download QR Code PNG dengan streamDownload
-                Tables\Actions\Action::make('download_qrcode')
-                    ->label('Download QR Code')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->action(function ($record) {
-                        $qrData = $record->id;
-                        $fileName = "qrcode-{$qrData}.png";
-
-                        // Generate QR Code PNG
-                        $qrImage = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(300)->generate($qrData);
-
-                        return response()->streamDownload(function () use ($qrImage) {
-                            echo $qrImage;
-                        }, $fileName, [
-                            'Content-Type' => 'application/octet-stream', // Force download
-                            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-                        ]);
-                    })
-                    ->requiresConfirmation(),
+                TTables\Actions\Action::make('download_qrcode_pdf')
+                ->label('Download QR Code PDF')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action(function ($record) {
+                    $qrData = $record->id;
+                    $fileName = "qrcode-{$qrData}.pdf";
+            
+                    // Generate QR Code Base64
+                    $qrCodeBase64 = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(300)->generate($qrData);
+                    $qrCodeImage = 'data:image/png;base64,' . base64_encode($qrCodeBase64);
+            
+                    // Generate PDF dengan QR Code
+                    $pdf = Pdf::loadView('pdf.qrcode', [
+                        'record' => $record,
+                        'qrCodeImage' => $qrCodeImage,
+                        'qrData' => $qrData
+                    ]);
+            
+                    return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->output();
+                    }, $fileName, [
+                        'Content-Type' => 'application/pdf',
+                    ]);
+                })
+                ->requiresConfirmation(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
