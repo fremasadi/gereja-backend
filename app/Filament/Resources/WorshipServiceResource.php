@@ -86,12 +86,16 @@ class WorshipServiceResource extends Resource
                         // Generate QR Code PNG
                         $qrImage = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(300)->generate($qrData);
     
-                        // Gunakan streamDownload untuk mengirim file langsung
+                        // Gunakan streamDownload dengan header yang memaksa download
                         return response()->streamDownload(function () use ($qrImage) {
                             echo $qrImage;
                         }, $fileName, [
-                            'Content-Type' => 'image/png',
+                            'Content-Type' => 'application/octet-stream', // Ubah ke octet-stream
                             'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                            'Content-Length' => strlen($qrImage),
+                            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                            'Pragma' => 'no-cache',
+                            'Expires' => '0',
                         ]);
                     })
                     ->requiresConfirmation()
