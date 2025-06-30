@@ -74,7 +74,7 @@ class WorshipServiceResource extends Resource
                 Tables\Actions\EditAction::make(),
                 
                 // Action Download QR Code PNG dengan streamDownload
-                TTables\Actions\Action::make('download_qrcode_pdf')
+                Tables\Actions\Action::make('download_qrcode_pdf')
                 ->label('Download QR Code PDF')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
