@@ -48,8 +48,10 @@ class CommunityResource extends Resource
     ->image()
     ->multiple()
     ->directory('communities')
-    ->storeFileNamesIn('images') // 👈 penting kalau ingin full path
+    ->storeFileNamesIn('images')
+    ->getUploadedFileUrlUsing(fn ($fileName) => Storage::url('communities/' . $fileName))
     ->required(),
+
                     Select::make('status')
                     ->label('Status')
                     ->required()
