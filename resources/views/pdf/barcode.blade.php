@@ -293,7 +293,12 @@
             <div class="qrcode-image">
                 <img src="{{ $qrCodeImage }}" alt="QR Code Absensi {{ $record->id }}">
             </div>
-            <div class="qrcode-id">ID: {{ $qrData }}</div>
+            <div class="qrcode-id">
+                @php
+                    $decodedData = json_decode($qrData, true);
+                @endphp
+                ID: {{ $decodedData ? $decodedData['id'] : $qrData }}
+            </div>
         </div>
         
         <div class="scan-instruction">
@@ -303,7 +308,18 @@
         
         <div class="data-preview">
             <strong>QR Code Data:</strong><br>
-            Service ID: {{ $qrData }}
+            @php
+                $decodedData = json_decode($qrData, true);
+            @endphp
+            @if($decodedData)
+                ID: {{ $decodedData['id'] }}<br>
+                Name: {{ $decodedData['name'] }}<br>
+                Service Time: {{ $decodedData['service_time'] }}<br>
+                Status: {{ $decodedData['is_active'] ? 'Active' : 'Inactive' }}<br>
+                Created: {{ $decodedData['created_at'] }}
+            @else
+                Service ID: {{ $qrData }}
+            @endif
         </div>
         
         <div class="footer">
