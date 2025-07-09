@@ -46,6 +46,7 @@ class CommunityResource extends Resource
                 Forms\Components\FileUpload::make('images')
                     ->label('Gambar Komunitas')
                     ->image()
+                    ->placeholder('Klik pilih gambar')
                     ->multiple()
                     ->required(),
                     Select::make('status')

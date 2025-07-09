@@ -89,7 +89,7 @@ class ChurchEventResource extends Resource
 
             Forms\Components\FileUpload::make('images')
                 ->image()
-                ->placeholder('Klik pilih gambar kategori')
+                ->placeholder('Klik pilih gambar')
                 ->required(),
 
             Forms\Components\Hidden::make('created_by')

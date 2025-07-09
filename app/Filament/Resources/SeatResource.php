@@ -47,9 +47,10 @@ class SeatResource extends Resource
                     ])
                     ->required()
                     ->live()
-                    ->afterStateUpdated(function ($state, Forms\Set $set) {
-                        $set('label', Str::upper($state) . ($set('number') ?? ''));
+                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                        $set('label', Str::upper($state) . ($get('number') ?? ''));
                     }),
+                    
 
                 Forms\Components\TextInput::make('number')
                     ->required()
