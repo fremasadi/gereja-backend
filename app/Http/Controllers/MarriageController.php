@@ -25,10 +25,12 @@ class MarriageController extends Controller
 
     public function index()
 {
-    $marriages = Marriage::all()->map(function ($marriage) {
+    $userId = auth()->id();
+
+    // Ambil hanya data yang dibuat oleh user ini
+    $marriages = Marriage::where('created_by', $userId)->get()->map(function ($marriage) {
         $marriageId = $marriage->id;
 
-        // Mapping setiap file image
         $marriage->images = collect($marriage->images)->map(function ($filename) use ($marriageId) {
             $parts = explode('_', $filename);
             $field = $parts[1] ?? 'unknown';
@@ -41,6 +43,7 @@ class MarriageController extends Controller
 
     return response()->json($marriages);
 }
+
 
     public function show($id)
     {
