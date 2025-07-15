@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class MarriageController extends Controller
 {
@@ -74,6 +75,8 @@ class MarriageController extends Controller
                 'no_telepon' => $request->no_telepon,
                 'tanggal_pernikahan' => $request->tanggal_pernikahan,
                 'status' => 'pending', // Tambahkan status
+                'created_by' => auth()->id(), // Ambil user ID dari token Sanctum
+
             ]);
 
             // Process and save images

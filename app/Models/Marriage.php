@@ -23,6 +23,8 @@ class Marriage extends Model
         'akte_nikah_orang_tua',
         'fotocopy_n1_n4',
         'foto_berdua',
+        'created_by', // <--- tambahkan ini
+
     ];
 
     protected $casts = [
@@ -35,4 +37,9 @@ class Marriage extends Model
         'foto_berdua' => 'array',
         'tanggal_pernikahan' => 'date',
     ];
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }
