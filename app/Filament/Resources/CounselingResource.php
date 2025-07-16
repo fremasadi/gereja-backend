@@ -65,6 +65,11 @@ class CounselingResource extends Resource
                 Tables\Columns\TextColumn::make('date')
                     ->date()
                     ->sortable(),
+                    Tables\Columns\TextColumn::make('time')
+                    ->label('Waktu')
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('H:i')),
+                
                 Tables\Columns\TextColumn::make('age')
                     ->numeric()
                     ->sortable(),
