@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $table->date('birthdaydate')->nullable()->after('phone');
+        $table->date('birthdaydate')->nullable();
     }
 
     /**
