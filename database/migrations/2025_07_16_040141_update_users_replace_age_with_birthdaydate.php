@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $table->date('birthdaydate')->nullable();
+        Schema::table('users', function (Blueprint $table) {
+            $table->date('birthdaydate')->nullable()->after('phone');
+        });
     }
 
     /**
@@ -19,6 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('users', function (Blueprint $table) {
+            $table->integer('age')->nullable()->after('phone');
+            $table->dropColumn('birthdaydate');
+        });
     }
 };
