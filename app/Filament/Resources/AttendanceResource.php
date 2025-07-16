@@ -87,7 +87,8 @@ class AttendanceResource extends Resource
                             ->when($data['until'], fn ($q, $date) => $q->whereDate('attendance_date', '<=', $date));
                     }),
             ])
-            
+            ->defaultSort('created_at', 'desc')
+
             ->actions([
                 // Tables\Actions\EditAction::make(),
             ])
