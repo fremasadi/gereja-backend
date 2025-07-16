@@ -24,7 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'phone',
-        'age'                                                   
+        'birthdaydate', // Ganti age dengan birthdaydate
     ];
 
     /**
@@ -35,6 +35,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'birthdaydate' => 'date',
+
     ];
 
     /**

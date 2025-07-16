@@ -66,7 +66,7 @@ class CounselingResource extends Resource
                     ->date()
                     ->sortable(),
                     Tables\Columns\TextColumn::make('time')
-                    ->label('Waktu')
+                    ->label('Time')
                     ->sortable()
                     ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('H:i')),
                 

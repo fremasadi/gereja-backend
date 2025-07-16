@@ -44,9 +44,11 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('phone')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('age')
+                    Forms\Components\DatePicker::make('birthdaydate')
+                    ->label('birthdaydate')
                     ->required()
-                    ->maxLength(255),
+                    ->native(false), // opsional: jika ingin UI datepicker penuh
+                
                 Select::make('gender')
                     ->label('Gender')
                     ->required()
@@ -80,7 +82,10 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('role'),
                 Tables\Columns\TextColumn::make('phone'),
-                Tables\Columns\TextColumn::make('age'),
+                Tables\Columns\TextColumn::make('birthdaydate')
+                ->label('birthdaydate')
+                ->date()
+                ->sortable(),                
                 Tables\Columns\TextColumn::make('gender'),
 
                 Tables\Columns\TextColumn::make('created_at')
