@@ -77,7 +77,7 @@ class MarriageController extends Controller
                 'nama_lengkap_wanita' => trim($request->nama_lengkap_wanita),
                 'no_telepon' => $request->no_telepon,
                 'tanggal_pernikahan' => $request->tanggal_pernikahan,
-                'status' => 'pending', // Tambahkan status
+                'status' => false, // status awal false
                 'created_by' => auth()->id(), // Ambil user ID dari token Sanctum
 
             ]);

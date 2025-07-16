@@ -24,7 +24,7 @@ class Marriage extends Model
         'fotocopy_n1_n4',
         'foto_berdua',
         'created_by', // <--- tambahkan ini
-
+        'status',
     ];
 
     protected $casts = [
@@ -36,6 +36,7 @@ class Marriage extends Model
         'fotocopy_n1_n4' => 'array',
         'foto_berdua' => 'array',
         'tanggal_pernikahan' => 'date',
+        'status' => 'boolean',
     ];
 
     public function createdBy()

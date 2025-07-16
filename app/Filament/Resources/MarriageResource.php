@@ -125,14 +125,12 @@ class MarriageResource extends Resource
                 Tables\Columns\TextColumn::make('tanggal_pernikahan')
                     ->date()
                     ->sortable(),
-                // Tables\Columns\TextColumn::make('created_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
-                // Tables\Columns\TextColumn::make('updated_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
+                    Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state) => $state ? 'Approve' : 'Pending')
+                    ->color(fn (string $state) => $state ? 'success' : 'warning'),
+                
             ])
             ->filters([
                 //
@@ -140,7 +138,15 @@ class MarriageResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->actions([
                 // Tables\Actions\EditAction::make(),
-                
+                Tables\Actions\Action::make('Setujui')
+                ->icon('heroicon-o-check-circle')
+                ->color('success')
+                ->requiresConfirmation()
+                ->visible(fn ($record) => !$record->status) // Hanya tampil jika belum disetujui
+                ->action(function ($record) {
+                    $record->update(['status' => true]);
+                }),
+
                 Tables\Actions\Action::make('Lihat Dokumen')
                     ->icon('heroicon-o-eye')
                     ->color('info')
