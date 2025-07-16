@@ -17,5 +17,12 @@ class Counseling extends Model
         'age',
         'counseling_topic',
         'type',
+        'time', // 👈 tambahkan ini
+
     ];
+
+    protected $casts = [
+        'time' => 'datetime:H:i', // atau 'time' => 'time' jika pakai Laravel >= 10
+    ];
+    
 }

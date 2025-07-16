@@ -32,6 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/church-events', [ChurchEventController::class, 'index']);
 
     Route::post('/counselings', [CounselingController::class, 'store']);
+    Route::get('/counselings', [CounselingController::class, 'index']);
+
     Route::get('/seat-bookings/available-seats', [SeatBookingController::class, 'availableSeats']);
     Route::post('/seat-bookings', [SeatBookingController::class, 'bookSeat']);
     Route::get('/my-bookings', [SeatBookingController::class, 'myBookings']);
