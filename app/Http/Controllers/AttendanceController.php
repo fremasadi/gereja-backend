@@ -41,69 +41,67 @@ class AttendanceController extends Controller
                 ], 403);
             }
 
-            // Cari apakah user sudah hadir di service ini (berdasarkan user_id dan worship_service_id)
-            $attendance = Attendance::where('user_id', $user->id)
-                ->where('worship_service_id', $worshipService->id)
-                ->first();
+            // PERBAIKAN: Gunakan database transaction untuk mencegah race condition
+            return \DB::transaction(function () use ($user, $worshipService, $serviceTime, $now) {
+                
+                // Cari attendance berdasarkan user_id dan attendance_date (bukan worship_service_id)
+                $attendanceDate = $serviceTime->toDateString();
+                
+                $attendance = Attendance::where('user_id', $user->id)
+                    ->where('attendance_date', $attendanceDate)
+                    ->first();
 
-            if (!$attendance) {
-                // Check-in pertama - gunakan updateOrCreate untuk menghindari duplicate
-                try {
-                    $attendance = Attendance::updateOrCreate(
-                        [
+                if (!$attendance) {
+                    // Check-in pertama
+                    try {
+                        $attendance = Attendance::create([
                             'user_id' => $user->id,
                             'worship_service_id' => $worshipService->id,
-                            'attendance_date' => $serviceTime->toDateString(),
-                        ],
-                        [
+                            'attendance_date' => $attendanceDate,
                             'check_in_at' => $now,
                             'created_at' => $now,
                             'updated_at' => $now,
-                        ]
-                    );
+                        ]);
+
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'Check-in berhasil.',
+                            'type' => 'checkin',
+                            'data' => $attendance,
+                        ], 200);
+                        
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        // Jika masih ada constraint error, kembalikan pesan yang jelas
+                        if ($e->errorInfo[1] == 1062) { // Duplicate entry error
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Anda sudah melakukan absensi untuk tanggal ini.',
+                            ], 400);
+                        }
+                        throw $e;
+                    }
+                }
+
+                // Jika sudah ada attendance, cek apakah sudah check-out
+                if (is_null($attendance->check_out_at)) {
+                    $attendance->update([
+                        'check_out_at' => $now,
+                        'updated_at' => $now,
+                    ]);
 
                     return response()->json([
                         'status' => true,
-                        'message' => 'Check-in berhasil.',
-                        'type' => 'checkin',
+                        'message' => 'Check-out berhasil.',
+                        'type' => 'checkout',
                         'data' => $attendance,
                     ], 200);
-                } catch (QueryException $e) {
-                    // Jika masih ada error constraint, coba cari attendance yang sudah ada
-                    $existingAttendance = Attendance::where('user_id', $user->id)
-                        ->where('attendance_date', $serviceTime->toDateString())
-                        ->first();
-                    
-                    if ($existingAttendance) {
-                        return response()->json([
-                            'status' => false,
-                            'message' => 'Anda sudah melakukan attendance untuk tanggal ini.',
-                        ], 400);
-                    }
-                    
-                    throw $e;
                 }
-            }
-
-            // Jika sudah ada attendance, cek apakah sudah check-out
-            if (is_null($attendance->check_out_at)) {
-                $attendance->update([
-                    'check_out_at' => $now,
-                    'updated_at' => $now,
-                ]);
 
                 return response()->json([
-                    'status' => true,
-                    'message' => 'Check-out berhasil.',
-                    'type' => 'checkout',
-                    'data' => $attendance,
-                ], 200);
-            }
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Anda sudah melakukan check-in dan check-out untuk ibadah ini.',
-            ], 400);
+                    'status' => false,
+                    'message' => 'Anda sudah melakukan check-in dan check-out untuk tanggal ini.',
+                ], 400);
+            });
 
         } catch (Exception $e) {
             // Log error untuk debugging
