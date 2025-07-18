@@ -41,12 +41,13 @@ class AttendanceController extends Controller
                 ], 403);
             }
 
-            // PERBAIKAN: Gunakan database transaction dan cari berdasarkan user_id + worship_service_id
+            // PERBAIKAN: Gunakan database transaction dengan explicit locking
             return \DB::transaction(function () use ($user, $worshipService, $serviceTime, $now) {
                 
-                // Cari attendance berdasarkan user_id DAN worship_service_id (bukan hanya date)
+                // PERBAIKAN: Gunakan lockForUpdate untuk mencegah race condition
                 $attendance = Attendance::where('user_id', $user->id)
                     ->where('worship_service_id', $worshipService->id)
+                    ->lockForUpdate()
                     ->first();
 
                 if (!$attendance) {
@@ -69,14 +70,26 @@ class AttendanceController extends Controller
                         ], 200);
                         
                     } catch (\Illuminate\Database\QueryException $e) {
+                        // Log error untuk debugging
+                        \Log::error('Attendance create error: ' . $e->getMessage(), [
+                            'user_id' => $user->id,
+                            'worship_service_id' => $worshipService->id,
+                            'error_code' => $e->errorInfo[1] ?? null,
+                            'sql_state' => $e->errorInfo[0] ?? null,
+                        ]);
+
                         // Jika masih ada constraint error
-                        if ($e->errorInfo[1] == 1062) { // Duplicate entry error
+                        if (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1062) { // Duplicate entry error
                             return response()->json([
                                 'status' => false,
                                 'message' => 'Anda sudah melakukan absensi untuk ibadah ini.',
                             ], 400);
                         }
-                        throw $e;
+                        
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Terjadi kesalahan database: ' . $e->getMessage(),
+                        ], 500);
                     }
                 }
 
@@ -114,6 +127,24 @@ class AttendanceController extends Controller
                 'message' => 'Terjadi kesalahan server. Silakan coba lagi.',
             ], 500);
         }
+    }
+
+    // TAMBAHAN: Method untuk debugging
+    public function checkAttendanceStatus(Request $request)
+    {
+        $user = Auth::user();
+        $worshipServiceId = $request->worship_service_id;
+
+        $attendance = Attendance::where('user_id', $user->id)
+            ->where('worship_service_id', $worshipServiceId)
+            ->first();
+
+        return response()->json([
+            'user_id' => $user->id,
+            'worship_service_id' => $worshipServiceId,
+            'attendance_exists' => !is_null($attendance),
+            'attendance_data' => $attendance,
+        ]);
     }
 
 public function index(Request $request)
