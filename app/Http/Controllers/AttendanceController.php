@@ -41,23 +41,21 @@ class AttendanceController extends Controller
                 ], 403);
             }
 
-            // PERBAIKAN: Gunakan database transaction untuk mencegah race condition
+            // PERBAIKAN: Gunakan database transaction dan cari berdasarkan user_id + worship_service_id
             return \DB::transaction(function () use ($user, $worshipService, $serviceTime, $now) {
                 
-                // Cari attendance berdasarkan user_id dan attendance_date (bukan worship_service_id)
-                $attendanceDate = $serviceTime->toDateString();
-                
+                // Cari attendance berdasarkan user_id DAN worship_service_id (bukan hanya date)
                 $attendance = Attendance::where('user_id', $user->id)
-                    ->where('attendance_date', $attendanceDate)
+                    ->where('worship_service_id', $worshipService->id)
                     ->first();
 
                 if (!$attendance) {
-                    // Check-in pertama
+                    // Check-in pertama untuk worship service ini
                     try {
                         $attendance = Attendance::create([
                             'user_id' => $user->id,
                             'worship_service_id' => $worshipService->id,
-                            'attendance_date' => $attendanceDate,
+                            'attendance_date' => $serviceTime->toDateString(),
                             'check_in_at' => $now,
                             'created_at' => $now,
                             'updated_at' => $now,
@@ -65,24 +63,24 @@ class AttendanceController extends Controller
 
                         return response()->json([
                             'status' => true,
-                            'message' => 'Check-in berhasil.',
+                            'message' => 'Check-in berhasil untuk ' . $worshipService->name . '.',
                             'type' => 'checkin',
                             'data' => $attendance,
                         ], 200);
                         
                     } catch (\Illuminate\Database\QueryException $e) {
-                        // Jika masih ada constraint error, kembalikan pesan yang jelas
+                        // Jika masih ada constraint error
                         if ($e->errorInfo[1] == 1062) { // Duplicate entry error
                             return response()->json([
                                 'status' => false,
-                                'message' => 'Anda sudah melakukan absensi untuk tanggal ini.',
+                                'message' => 'Anda sudah melakukan absensi untuk ibadah ini.',
                             ], 400);
                         }
                         throw $e;
                     }
                 }
 
-                // Jika sudah ada attendance, cek apakah sudah check-out
+                // Jika sudah ada attendance untuk worship service ini, cek apakah sudah check-out
                 if (is_null($attendance->check_out_at)) {
                     $attendance->update([
                         'check_out_at' => $now,
@@ -91,7 +89,7 @@ class AttendanceController extends Controller
 
                     return response()->json([
                         'status' => true,
-                        'message' => 'Check-out berhasil.',
+                        'message' => 'Check-out berhasil untuk ' . $worshipService->name . '.',
                         'type' => 'checkout',
                         'data' => $attendance,
                     ], 200);
@@ -99,7 +97,7 @@ class AttendanceController extends Controller
 
                 return response()->json([
                     'status' => false,
-                    'message' => 'Anda sudah melakukan check-in dan check-out untuk tanggal ini.',
+                    'message' => 'Anda sudah melakukan check-in dan check-out untuk ibadah ' . $worshipService->name . '.',
                 ], 400);
             });
 
