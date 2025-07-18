@@ -81,5 +81,20 @@ class AttendanceController extends Controller
     ], 400);
 }
 
+public function index(Request $request)
+{
+    $user = $request->user(); // atau Auth::user()
+
+    $attendances = Attendance::with('worshipService')
+        ->where('user_id', $user->id)
+        ->orderBy('attendance_date', 'desc')
+        ->get();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Data kehadiran berhasil diambil.',
+        'data' => $attendances,
+    ]);
+}
 
 }

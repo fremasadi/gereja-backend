@@ -49,6 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/profile', [UserController::class, 'profile']);
 
     Route::post('/attendance/scan', [AttendanceController::class, 'scanBarcode']);
+    Route::get('/attendance', [AttendanceController::class, 'index']);
+
     Route::get('/church-events/images', [ChurchEventController::class, 'images']);
 
 });
